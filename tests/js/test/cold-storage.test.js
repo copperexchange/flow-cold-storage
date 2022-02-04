@@ -21,7 +21,7 @@ import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
 import { toUFix64, getAccountA, getAccountB } from "../src/common";
 
 // We need to set timeout for a higher number, because some transactions might take up some time
-jest.setTimeout(50000);
+jest.setTimeout(5000);
 
 const privateKeyA = "a883b6291a57260fbedd3e8d97e80fae51b6b4d6a06beb5b4e65abc771d089b9"
 const privateKeyB = "6762ad19ddbaa32b9d4eab8cda47a75cfc1add35b9cb195eeff68720d21aeda9"
@@ -50,7 +50,7 @@ describe("ColdStorage", () => {
 	beforeEach(async () => {
 		const basePath = path.resolve(__dirname, "../../../");
 		const port = 8083;
-		init(basePath, port);
+		await init(basePath, port);
 		return emulator.start(port, false);
 	});
 
