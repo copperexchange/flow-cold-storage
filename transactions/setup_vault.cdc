@@ -1,6 +1,6 @@
-import FungibleToken from 0x9a0766d93b6608b7
-import FlowToken from 0x7e60df042a9c0868
-import ColdStorage from 0x4c0baa55880a3a15
+import FungibleToken from "./FungibleToken.cdc"
+import FlowToken from "./FlowToken.cdc"
+import ColdStorage from "../contracts/ColdStorage.cdc"
 
 transaction(publicKey: String, signatureAlgorithmRaw: UInt8, hashAlgorithmRaw: UInt8) {
   prepare(signer: AuthAccount) {

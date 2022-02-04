@@ -9,7 +9,7 @@ export const deployColdStorage = async () => {
 };
 
 export const setupColdStorageVault = async (account, publicKey) => {
-	const name = "setup_account";
+	const name = "setup_vault";
 	const args = [publicKey];
 	const signers = [account];
 
@@ -17,7 +17,7 @@ export const setupColdStorageVault = async (account, publicKey) => {
 };
 
 export const transferTokens = async (sender, recipient, amount, seqNo, signatureB) => {
-	const name = "transfer_tokens";
+	const name = "transfer_funds";
 	const args = [sender, recipient, amount, seqNo, signatureB];
 
 	return sendTransaction({ name, args });

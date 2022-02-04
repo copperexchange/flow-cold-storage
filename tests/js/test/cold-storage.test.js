@@ -21,7 +21,7 @@ import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
 import { toUFix64, getAccountA, getAccountB } from "../src/common";
 
 // We need to set timeout for a higher number, because some transactions might take up some time
-jest.setTimeout(5000);
+jest.setTimeout(50000);
 
 const privateKeyA = "a883b6291a57260fbedd3e8d97e80fae51b6b4d6a06beb5b4e65abc771d089b9"
 const privateKeyB = "6762ad19ddbaa32b9d4eab8cda47a75cfc1add35b9cb195eeff68720d21aeda9"
@@ -64,7 +64,7 @@ describe("ColdStorage", () => {
 
 		const accountB = await getAccountB();
 
-		await shallPass(setupColdStorageVault(accountB, publicKeyB));
+		await shallPass(setupColdStorageVault(accountB, publicKeyB, 3, 1));
 
 		const balance = await getBalance(accountB);
 		expect(balance).toBe(toUFix64(0));
@@ -75,7 +75,7 @@ describe("ColdStorage", () => {
 
 		const accountB = await getAccountB();
 
-		await shallPass(setupColdStorageVault(accountB, publicKeyB));
+		await shallPass(setupColdStorageVault(accountB, publicKeyB, 3, 1));
 
 		await mintFlow(accountB, "10.0");
 
@@ -89,7 +89,7 @@ describe("ColdStorage", () => {
 		const accountA = await getAccountA();
 		const accountB = await getAccountB();
 
-		await shallPass(setupColdStorageVault(accountB, publicKeyA, publicKeyB));
+		await shallPass(setupColdStorageVault(accountB, publicKeyB, 3, 1));
 
 		await mintFlow(accountB, "10.0");
 
@@ -108,13 +108,6 @@ describe("ColdStorage", () => {
 			]
 		).toString("hex");
 
-		const signatureA = signWithPrivateKey(
-			privateKeyA,
-			sigAlgos.ECDSA_P256,
-			hashAlgos.SHA3_256,
-			message
-		);
-
 		const signatureB = signWithPrivateKey(
 			privateKeyB,
 			sigAlgos.ECDSA_P256,
@@ -123,7 +116,7 @@ describe("ColdStorage", () => {
 		);
 
 		await shallPass(transferTokens(
-			sender, recipient, amount, seqNo, signatureA, signatureB
+			sender, recipient, amount, seqNo, signatureB
 		));
 
 		const balanceA = await getFlowBalance(accountA);
@@ -132,4 +125,4 @@ describe("ColdStorage", () => {
 		const balanceB = await getBalance(accountB);
 		expect(balanceB).toBe(toUFix64(5.0));
 	});
-});w
+});

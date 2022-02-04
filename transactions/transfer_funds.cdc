@@ -1,5 +1,5 @@
 import Crypto
-import ColdStorage from 0xd6c19aa81a451d7c
+import ColdStorage from "../contracts/ColdStorage.cdc"
 
 transaction(senderAddress: Address, recipientAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String) {
 
