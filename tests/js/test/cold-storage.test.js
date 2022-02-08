@@ -8,12 +8,12 @@ import {
 	mintFlow,
 	getFlowBalance,
 } from "flow-js-testing";
-
+import {config} from "@onflow/config"
 import {
 	deployColdStorage,
 	setupColdStorageVault,
 	transferTokens,
-	getBalance,
+	getBalance, getSequence,
 } from "../src/cold-storage";
 
 import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
@@ -21,13 +21,13 @@ import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
 import { toUFix64, getAccountA, getAccountB } from "../src/common";
 
 // We need to set timeout for a higher number, because some transactions might take up some time
-jest.setTimeout(5000);
+jest.setTimeout(10000);
 
 const privateKeyA = "a883b6291a57260fbedd3e8d97e80fae51b6b4d6a06beb5b4e65abc771d089b9"
-const privateKeyB = "6762ad19ddbaa32b9d4eab8cda47a75cfc1add35b9cb195eeff68720d21aeda9"
+const privateKeyB = "102f7a8cb22083d1f44ea6f2e7df19c620689f7944408e421873a254c0749c37"
 
 const publicKeyA = "c22486263226f11536ff10f4b2ad30f52dfb4b37e457adc6e95531d4c7c1d3ba9b5871c69ac4108129fc4e6856cb7c3458e57bfdb577b32cfa7dc49598de4289"
-const publicKeyB = "395a7e3a2a0eda183b95dd2cee48baa4c584b44a9ef06db7e1103e609b923a142c181a402fed59d3ea2fc90431c366311c5cc1f76cc72927d27cfdafd4b2acdd"
+const publicKeyB = "727369698d62f2ec2f0ea4788192824c682e9a576d1d4769978a336b801b42735f2dbae2e722baa3d4d26ca276a1e4dccc3e5b1f52a39324a722372cca5bf114"
 
 // The UserDomainTag is the prefix of all signed user space payloads.
 //
@@ -51,6 +51,7 @@ describe("ColdStorage", () => {
 		const basePath = path.resolve(__dirname, "../../../");
 		const port = 8083;
 		await init(basePath, port);
+		config().put("PRIVATE_KEY", "8e3983030d2af1fa01c078241ad7f699d492e0239247f38d5a96cb959e436531")
 		return emulator.start(port, false);
 	});
 
@@ -60,26 +61,29 @@ describe("ColdStorage", () => {
 	});
 
 	it("should be able to create an empty ColdStorage.Vault", async () => {
-		await deployColdStorage();
+		const contractName = await deployColdStorage();
+		console.log("deployed", contractName)
 
-		const accountB = await getAccountB();
-
-		await shallPass(setupColdStorageVault(accountB, publicKeyB, 3, 1));
-
-		const balance = await getBalance(accountB);
-		expect(balance).toBe(toUFix64(0));
+		const accountA = await getAccountA();
+		const vault = await setupColdStorageVault(accountA, publicKeyB)
+		console.log("accountB vault", vault)
 	});
 
 	it("should be able to create a ColdStorage.Vault and fund with FLOW", async () => {
 		await deployColdStorage();
 
-		const accountB = await getAccountB();
+		const accountA = await getAccountA();
+		await mintFlow(accountA, "10.0");
 
-		await shallPass(setupColdStorageVault(accountB, publicKeyB, 3, 1));
+		const [settedUp] = await setupColdStorageVault(accountA, publicKeyB)
 
-		await mintFlow(accountB, "10.0");
+		const { data: { address } } = settedUp.events.find((event) => event.type == 'flow.AccountCreated')
 
-		const balance = await getBalance(accountB);
+		await mintFlow(address, "10.0");
+
+		const [balance, _] = await getBalance(address);
+
+
 		expect(balance).toBe(toUFix64(10.0));
 	});
 
@@ -87,16 +91,23 @@ describe("ColdStorage", () => {
 		await deployColdStorage();
 
 		const accountA = await getAccountA();
-		const accountB = await getAccountB();
+		await mintFlow(accountA, "10.0");
 
-		await shallPass(setupColdStorageVault(accountB, publicKeyB, 3, 1));
+		const [settedUp] = await setupColdStorageVault(accountA, publicKeyB)
 
-		await mintFlow(accountB, "10.0");
+		const { data: { address } } = settedUp.events.find((event) => event.type == 'flow.AccountCreated')
 
-		const sender = accountB
+		await mintFlow(address, "10.0");
+
+		const [balance,] = await getBalance(address);
+		const [sequence,] = await getSequence(address);
+
+		console.log(address, balance, sequence)
+
+		const sender = address
 		const recipient = accountA
 		const amount = "5.0"
-		const seqNo = 0
+		const seqNo = sequence
 
 		const message = Buffer.concat(
 			[
@@ -110,19 +121,19 @@ describe("ColdStorage", () => {
 
 		const signatureB = signWithPrivateKey(
 			privateKeyB,
-			sigAlgos.ECDSA_P256,
-			hashAlgos.SHA3_256,
+			sigAlgos.ECDSA_secp256k1,
+			hashAlgos.SHA2_256,
 			message,
 		);
 
-		await shallPass(transferTokens(
+		await transferTokens(
 			sender, recipient, amount, seqNo, signatureB
-		));
+		)
 
-		const balanceA = await getFlowBalance(accountA);
-		expect(balanceA).toBe(toUFix64(15.00100000));
+		const [balanceA,] = await getFlowBalance(accountA);
+		expect(balanceA).toBe(toUFix64(15.00000000));
 
-		const balanceB = await getBalance(accountB);
+		const [balanceB,] = await getBalance(address);
 		expect(balanceB).toBe(toUFix64(5.0));
 	});
 });

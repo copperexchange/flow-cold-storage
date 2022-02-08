@@ -155,8 +155,11 @@ pub contract ColdStorage {
       )
     }
 
-    init(contents: @FungibleToken.Vault) {
+    init(address: Address, key: Key, contents: @FungibleToken.Vault) {
+      self.key = key
+      self.seqNo = UInt64(0)
       self.contents <- contents
+      self.address = address
     }
 
     destroy() {
@@ -169,7 +172,7 @@ pub contract ColdStorage {
     key: Key,
     contents: @FungibleToken.Vault,
   ): @Vault {
-    return <- create Vault(contents: <- contents)
+    return <- create Vault(address: address, key: key, contents: <- contents)
   }
 
   pub fun validateSignature(

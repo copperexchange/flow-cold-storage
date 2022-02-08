@@ -1,4 +1,5 @@
 import Crypto
+
 import ColdStorage from "../contracts/ColdStorage.cdc"
 
 transaction(senderAddress: Address, recipientAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String) {
@@ -12,12 +13,11 @@ transaction(senderAddress: Address, recipientAddress: Address, amount: UFix64, s
       .getCapability(/public/flowTokenColdStorage)!
       .borrow<&ColdStorage.Vault{ColdStorage.PublicVault}>()!
 
-    let signatureSet = [
+    let signatureSet =
       Crypto.KeyListSignature(
         keyIndex: 0,
         signature: signatureA.decodeHex()
       )
-    ]
 
     let request = ColdStorage.WithdrawRequest(
       senderAddress: senderAddress,

@@ -5,7 +5,26 @@
 			"serviceAccount": "emulator-account"
 		}
 	},
-	"contracts": {},
+	"contracts": {
+		"ColdStorage": {
+			"source": "./contracts/ColdStorage.cdc",
+			"aliases": {
+				"testnet": "0x4c0baa55880a3a15"
+			}
+		},
+		"FlowToken": {
+			"source": "./contracts/FlowToken.cdc",
+			"aliases": {
+				"testnet": "0x7e60df042a9c0868"
+			}
+		},
+		"FungibleToken": {
+			"source": "./contracts/FungibleToken.cdc",
+			"aliases": {
+				"testnet": "0x9a0766d93b6608b7"
+			}
+		}
+	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",
 		"mainnet": "access.mainnet.nodes.onflow.org:9000",
@@ -17,5 +36,9 @@
 			"key": "f4109145f06970bba51cf9dbac56c55980f94634ec24eec66785c0a49c1487ed"
 		}
 	},
-	"deployments": {}
+	"deployments": {
+		"emulator": {
+			"emulator-account": ["ColdStorage"]
+		}
+	}
 }

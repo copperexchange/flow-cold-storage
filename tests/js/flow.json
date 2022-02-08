@@ -15,6 +15,10 @@
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"keys": "8e3983030d2af1fa01c078241ad7f699d492e0239247f38d5a96cb959e436531"
+		},
+		"accountA": {
+			"address": "f8d6e0586b0a20c8",
+			"keys": "a883b6291a57260fbedd3e8d97e80fae51b6b4d6a06beb5b4e65abc771d089b9"
 		}
 	},
 	"deployments": {}
