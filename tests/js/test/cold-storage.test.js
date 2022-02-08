@@ -2,9 +2,6 @@ import path from "path";
 import {
 	emulator,
 	init,
-	shallPass,
-	shallResolve,
-	shallRevert,
 	mintFlow,
 	getFlowBalance,
 } from "flow-js-testing";
@@ -23,10 +20,7 @@ import { toUFix64, getAccountA, getAccountB } from "../src/common";
 // We need to set timeout for a higher number, because some transactions might take up some time
 jest.setTimeout(10000);
 
-const privateKeyA = "a883b6291a57260fbedd3e8d97e80fae51b6b4d6a06beb5b4e65abc771d089b9"
 const privateKeyB = "102f7a8cb22083d1f44ea6f2e7df19c620689f7944408e421873a254c0749c37"
-
-const publicKeyA = "c22486263226f11536ff10f4b2ad30f52dfb4b37e457adc6e95531d4c7c1d3ba9b5871c69ac4108129fc4e6856cb7c3458e57bfdb577b32cfa7dc49598de4289"
 const publicKeyB = "727369698d62f2ec2f0ea4788192824c682e9a576d1d4769978a336b801b42735f2dbae2e722baa3d4d26ca276a1e4dccc3e5b1f52a39324a722372cca5bf114"
 
 // The UserDomainTag is the prefix of all signed user space payloads.
