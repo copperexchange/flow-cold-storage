@@ -1,24 +1,24 @@
 import Crypto
 
-import ColdStorage from 0x8b7e0b1056e8f550
+import ColdStorageA from "../contracts/ColdStorageA.cdc"
 
 transaction(senderAddress: Address, recipientAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String) {
 
-  let pendingWithdrawal: @ColdStorage.PendingWithdrawal
+  let pendingWithdrawal: @ColdStorageA.PendingWithdrawal
 
   prepare(signer: AuthAccount) {
     let sender = getAccount(senderAddress)
 
     let publicVault = sender
       .getCapability(/public/flowTokenColdStorage)!
-      .borrow<&ColdStorage.Vault{ColdStorage.PublicVault}>()!
+      .borrow<&ColdStorageA.Vault{ColdStorageA.PublicVault}>()!
 
-    let request = ColdStorage.WithdrawRequest(
+    let request = ColdStorageA.WithdrawRequest(
       senderAddress: senderAddress,
       recipientAddress: recipientAddress,
       amount: amount,
       seqNo: seqNo,
-      sigSet: signatureA.decodeHex(),
+      sigSet: signatureA
     )
 
     self.pendingWithdrawal <- publicVault.prepareWithdrawal(request: request)

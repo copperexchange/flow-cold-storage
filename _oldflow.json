@@ -2,16 +2,10 @@
 	"emulators": {
 		"default": {
 			"port": 3569,
-			"serviceAccount": "emulator-account"
+			"serviceAccount": "cold-account"
 		}
 	},
 	"contracts": {
-		"ColdStorageA": {
-			"source": "./contracts/ColdStorageA.cdc",
-			"aliases": {
-				"testnet": "0x3acec2357e49866e"
-			}
-		},
 		"ColdStorage": {
 			"source": "./contracts/ColdStorage.cdc",
 			"aliases": {
@@ -21,15 +15,13 @@
 		"FlowToken": {
 			"source": "./contracts/FlowToken.cdc",
 			"aliases": {
-				"testnet": "0x7e60df042a9c0868",
-				"emulator": "0x0ae53cb6e3f42a79"
+				"testnet": "0x7e60df042a9c0868"
 			}
 		},
 		"FungibleToken": {
 			"source": "./contracts/FungibleToken.cdc",
 			"aliases": {
-				"testnet": "0x9a0766d93b6608b7",
-				"emulator": "0xee82856bf20e2aa6"
+				"testnet": "0x9a0766d93b6608b7"
 			}
 		}
 	},
@@ -42,16 +34,6 @@
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"key": "f4109145f06970bba51cf9dbac56c55980f94634ec24eec66785c0a49c1487ed"
-		},
-		"emuspender": {
-			"key": "1e16176a41cd6a306de555977775eea3349ef9a0a89a922c5d89f4a6ca422c76",
-			"address" : "0x179b6b1cb6755e31",
-			"public": "31b738429292353a39fd0d9b2e2b167950b4fea1d6831e6d58c8fed55e5dd76ba52d9384af4e4ecb9ed5fe3df53f8535ecf4848cd42de47fef783d45d31f96b7"
-		},
-		"contractOwner": {
-			"address": "0x3acec2357e49866e",
-			"key": "6232fe96cd6be8f8e0957b4f79f9186fb916a48d80c10343c4826eb149b4832f",
-			"publicKey": "9b98e8b8f34a3f703158c2f03c9aaeeddd1807ded478b4f26ccad45c77bfb72edbca5e5de0a9d28a26cde7113e1579ab57634c84019746ae5e5367b232bc5d44"
 		},
 		"testnet-account": {
 			"address": "34bc02f930654a1d",
@@ -68,7 +50,7 @@
 	},
 	"deployments": {
 		"emulator": {
-			"emulator-account": ["ColdStorageA"]
+			"emulator-account": ["ColdStorage"]
 		},
 		"testnet": {
 			"cold": ["ColdStorage"]

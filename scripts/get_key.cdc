@@ -1,9 +1,9 @@
-import ColdStorage from 0x8b7e0b1056e8f550
+import ColdStorageA from 0x3acec2357e49866e
 
-pub fun main(address: Address): ColdStorage.Key {
+pub fun main(address: Address): [ColdStorageA.Key] {
   let publicVault = getAccount(address)
     .getCapability(/public/flowTokenColdStorage)!
-    .borrow<&ColdStorage.Vault{ColdStorage.PublicVault}>()!
+    .borrow<&ColdStorageA.Vault{ColdStorageA.PublicVault}>()!
 
-  return publicVault.getKey()
+  return publicVault.getKeys()
 }

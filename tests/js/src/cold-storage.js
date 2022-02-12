@@ -13,6 +13,13 @@ export const deployColdStorage = async () => {
 	return await getContractAddress("ColdStorage");
 };
 
+export const deployColdStorageA = async () => {
+	console.log("deployContractByName({  name: \"ColdStorageA\" })")
+	const deployed = await deployContractByName({  name: "ColdStorageA" });
+	console.log(deployed)
+	return await getContractAddress("ColdStorageA");
+};
+
 export const setupColdStorageVault = async (account, publicKey) => {
 	const name = "setup_vault";
 	const args = [publicKey, 2, 1];

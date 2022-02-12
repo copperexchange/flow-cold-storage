@@ -1,9 +1,8 @@
 import ColdStorageA from "../contracts/ColdStorageA.cdc"
 
-pub fun main(address: Address): UFix64 {
+pub fun main(address: Address): Capability {
   let publicVault = getAccount(address)
     .getCapability(/public/flowTokenColdStorage)!
-    .borrow<&ColdStorageA.Vault{ColdStorageA.PublicVault}>()!
 
-  return publicVault.getBalance()
+  return publicVault
 }

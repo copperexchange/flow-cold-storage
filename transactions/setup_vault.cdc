@@ -1,6 +1,6 @@
-import FungibleToken from 0x9a0766d93b6608b7
-import FlowToken from 0x7e60df042a9c0868
-import ColdStorage from 0x8b7e0b1056e8f550
+import FungibleToken from "../contracts/FungibleToken.cdc"
+import FlowToken from "../contracts/FlowToken.cdc"
+import ColdStorageA from "../contracts/ColdStorageA.cdc"
 
 transaction(publicKey: String) {
   prepare(signer: AuthAccount) {
@@ -12,9 +12,11 @@ transaction(publicKey: String) {
     account.keys.add(
         publicKey: PublicKey(
           publicKey: publicKey.decodeHex(),
-          signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1,
+          //signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1,
+          signatureAlgorithm: SignatureAlgorithm.ECDSA_P256,
         ),
-        hashAlgorithm: HashAlgorithm.SHA2_256,
+        //hashAlgorithm: HashAlgorithm.SHA2_256,
+        hashAlgorithm: HashAlgorithm.SHA3_256,
         weight: 1000.0,
     )
 
@@ -22,14 +24,17 @@ transaction(publicKey: String) {
 
     let key = account.keys.get(keyIndex: 0) ?? panic("Invalid key in account")
 
-    let accountKey = ColdStorage.Key(
-      publicKey: key.publicKey.publicKey,
+    log(key.publicKey)
+
+    let accountKey = ColdStorageA.Key(
+      publicKey: publicKey,
+      weight: 1000.0
     )
 
 
-    let coldVault <- ColdStorage.createVault(
+    let coldVault <- ColdStorageA.createVault(
       address: account.address,
-      key: accountKey,
+      keys: [accountKey],
       contents: <-flowVault,
     )
 
@@ -38,7 +43,7 @@ transaction(publicKey: String) {
 
 
     // ability to get the sequence number of the vault
-    account.link<&ColdStorage.Vault{ColdStorage.PublicVault}>(
+    account.link<&ColdStorageA.Vault{ColdStorageA.PublicVault}>(
       /public/flowTokenColdStorage,
       target: /storage/flowTokenColdStorage
     )

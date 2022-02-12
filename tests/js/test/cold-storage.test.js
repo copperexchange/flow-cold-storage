@@ -10,7 +10,7 @@ import {
 	deployColdStorage,
 	setupColdStorageVault,
 	transferTokens,
-	getBalance, getSequence,
+	getBalance, getSequence, deployColdStorageA,
 } from "../src/cold-storage";
 
 import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
@@ -42,16 +42,16 @@ function toBigEndianBytes(number, bits) {
 describe("ColdStorage", () => {
 	// Instantiate emulator and path to Cadence files
 	beforeEach(async () => {
-		// const basePath = path.resolve(__dirname, "../../../");
-		// const port = 8083;
-		// await init(basePath, port);
-		// config().put("PRIVATE_KEY", "8e3983030d2af1fa01c078241ad7f699d492e0239247f38d5a96cb959e436531")
-		// return emulator.start(port, true);
+		const basePath = path.resolve(__dirname, "../../../");
+		const port = 8083;
+		await init(basePath, port);
+		config().put("PRIVATE_KEY", "8e3983030d2af1fa01c078241ad7f699d492e0239247f38d5a96cb959e436531")
+		return emulator.start(port, true);
 	});
 
 	// Stop emulator, so it could be restarted
 	afterEach(async () => {
-		// return emulator.stop();
+		return emulator.stop();
 	});
 	//
 	// it("should be able to create an empty ColdStorage.Vault", async () => {
@@ -81,82 +81,82 @@ describe("ColdStorage", () => {
 	// 	expect(balance).toBe(toUFix64(10.0));
 	// });
 
+	// it("should be able to transfer FLOW from a ColdStorage.Vault", async () => {
+	// 	// const privateKey = "0cc541bbd212e67c6fde23913dbb5f3b448182cbed6d4220b1983e7bc29acdca"
+	// 	// const sender = "34bc02f930654a1d"
+	// 	const privateKey = "80c7c2a326dbf0c3bac8d047ee9923f4000fce6a209ef7839abf4ca2f443d637"
+	// 	const sender = "0x7e1242144b7369d8"
+	// 	const recipient = "0x4c0baa55880a3a15"
+	// 	const amount = "5.0"
+	// 	const seqNo = "0"
+	//
+	// 	const message = Buffer.concat(
+	// 		[
+	// 			userDomainTag,
+	// 			Buffer.from(sender.slice(2), "hex"),
+	// 			Buffer.from(recipient.slice(2), "hex"),
+	// 			toBigEndianBytes("500000000", 64), // amount
+	// 			toBigEndianBytes("1", 64),         // seqNo
+	// 		]
+	// 	).toString("hex");
+	//
+	// 	const signature = signWithPrivateKey(
+	// 		privateKey,
+	// 		sigAlgos.ECDSA_secp256k1,
+	// 		hashAlgos.SHA2_256,
+	// 		message,
+	// 	);
+	//
+	// 	console.log(signature)
+	// })
 	it("should be able to transfer FLOW from a ColdStorage.Vault", async () => {
-		// const privateKey = "0cc541bbd212e67c6fde23913dbb5f3b448182cbed6d4220b1983e7bc29acdca"
-		// const sender = "34bc02f930654a1d"
-		const privateKey = "80c7c2a326dbf0c3bac8d047ee9923f4000fce6a209ef7839abf4ca2f443d637"
-		const sender = "0x7e1242144b7369d8"
-		const recipient = "0x4c0baa55880a3a15"
-		const amount = "5.0"
-		const seqNo = "0"
-
-		const message = Buffer.concat(
-			[
-				userDomainTag,
-				Buffer.from(sender.slice(2), "hex"),
-				Buffer.from(recipient.slice(2), "hex"),
-				toBigEndianBytes("500000000", 64), // amount
-				toBigEndianBytes("1", 64),         // seqNo
-			]
-		).toString("hex");
-
-		const signature = signWithPrivateKey(
-			privateKey,
-			sigAlgos.ECDSA_secp256k1,
-			hashAlgos.SHA2_256,
-			message,
-		);
-
-		console.log(signature)
-	})
-	it("should be able to transfer FLOW from a ColdStorage.Vault", async () => {
-		const a = await deployColdStorage();
+		const a = await deployColdStorageA();
 		console.log(a)
-
-		const accountA = await getAccountA();
-		await mintFlow(accountA, "10.0");
-
-		const settedUp = await setupColdStorageVault(accountA, publicKeyB)
-		console.log(settedUp)
-		const { data: { address } } = settedUp[0].events.find((event) => event.type == 'flow.AccountCreated')
-
-		await mintFlow(address, "10.0");
-
-		const [balance,] = await getBalance(address);
-		const [sequence,] = await getSequence(address);
-
-		console.log(address, balance, sequence)
-
-		const sender = address
-		const recipient = accountA
-		const amount = "5.0"
-		const seqNo = sequence
-
-		const message = Buffer.concat(
-			[
-				userDomainTag,
-				Buffer.from(sender.slice(2), "hex"),
-				Buffer.from(recipient.slice(2), "hex"),
-				toBigEndianBytes("500000000", 64), // amount
-				toBigEndianBytes("0", 64),         // seqNo
-			]
-		).toString("hex");
-
-		const signatureB = signWithPrivateKey(
-			privateKeyB,
-			sigAlgos.ECDSA_secp256k1,
-			hashAlgos.SHA2_256,
-			message,
-		);
-
-		await transferTokens(
-			sender, recipient, amount, seqNo, signatureB
-		)
-
-		const [balanceA,] = await getFlowBalance(accountA);
-		expect(balanceA).toBe(toUFix64(15.00000000));
-
-		const [balanceB,] = await getBalance(address);
-		expect(balanceB).toBe(toUFix64(5.0));
+		//
+		// const accountA = await getAccountA();
+		// await mintFlow(accountA, "10.0");
+		//
+		// const settedUp = await setupColdStorageVault(accountA, publicKeyB)
+		// console.log(settedUp)
+		// const { data: { address } } = settedUp[0].events.find((event) => event.type == 'flow.AccountCreated')
+		//
+		// await mintFlow(address, "10.0");
+		//
+		// const [balance,] = await getBalance(address);
+		// const [sequence,] = await getSequence(address);
+		//
+		// console.log(address, balance, sequence)
+		//
+		// const sender = address
+		// const recipient = accountA
+		// const amount = "5.0"
+		// const seqNo = sequence
+		//
+		// const message = Buffer.concat(
+		// 	[
+		// 		userDomainTag,
+		// 		Buffer.from(sender.slice(2), "hex"),
+		// 		Buffer.from(recipient.slice(2), "hex"),
+		// 		toBigEndianBytes("500000000", 64), // amount
+		// 		toBigEndianBytes("0", 64),         // seqNo
+		// 	]
+		// ).toString("hex");
+		//
+		// const signatureB = signWithPrivateKey(
+		// 	privateKeyB,
+		// 	sigAlgos.ECDSA_secp256k1,
+		// 	hashAlgos.SHA2_256,
+		// 	message,
+		// );
+		//
+		// await transferTokens(
+		// 	sender, recipient, amount, seqNo, signatureB
+		// )
+		//
+		// const [balanceA,] = await getFlowBalance(accountA);
+		// expect(balanceA).toBe(toUFix64(15.00000000));
+		//
+		// const [balanceB,] = await getBalance(address);
+		// expect(balanceB).toBe(toUFix64(5.0));
 	});
 });
