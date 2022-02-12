@@ -1,22 +1,28 @@
 import Crypto
 
-import FungibleToken from 0x9a0766d93b6608b7
-import FlowToken from 0x7e60df042a9c0868
+import FungibleToken from "./FungibleToken.cdc"
+import FlowToken from "./FlowToken.cdc"
 
 pub contract ColdStorage {
 
   pub struct Key {
     pub let publicKey: [UInt8]
+    pub let signatureAlgorithm: UInt8
+    pub let hashAlgorithm: UInt8
 
     init(
       publicKey: [UInt8],
+      signatureAlgorithm: SignatureAlgorithm,
+      hashAlgorithm: HashAlgorithm
     ) {
       self.publicKey = publicKey
+      self.signatureAlgorithm = signatureAlgorithm.rawValue
+      self.hashAlgorithm = hashAlgorithm.rawValue
     }
   }
 
   pub struct interface ColdStorageRequest {
-    pub var signature: String
+    pub var signature: Crypto.KeyListSignature
     pub var seqNo: UInt64
     pub var spenderAddress: Address
 
@@ -24,7 +30,7 @@ pub contract ColdStorage {
   }
 
   pub struct WithdrawRequest: ColdStorageRequest {
-    pub var signature: String
+    pub var signature: Crypto.KeyListSignature
     pub var seqNo: UInt64
 
     pub var spenderAddress: Address
@@ -36,7 +42,7 @@ pub contract ColdStorage {
       recipientAddress: Address,
       amount: UFix64,
       seqNo: UInt64,
-      signature: String,
+      signature: Crypto.KeyListSignature,
     ) {
       self.spenderAddress = spenderAddress
       self.recipientAddress = recipientAddress
@@ -51,6 +57,11 @@ pub contract ColdStorage {
       let recipientAddressBytes = self.recipientAddress.toBytes()
       let amountBytes = self.amount.toBigEndianBytes()
       let seqNoBytes = self.seqNo.toBigEndianBytes()
+      log("AAAAAAAAAAAAAAAAAA!QA!@@!!!!!")
+      log(spenderAddress)
+      log(recipientAddressBytes)
+      log(amountBytes)
+      log(seqNoBytes)
 
       return spenderAddress.concat(recipientAddressBytes).concat(amountBytes).concat(seqNoBytes)
     }
@@ -171,19 +182,29 @@ pub contract ColdStorage {
 
   pub fun validateSignature(
     key: Key,
-    signature: String,
+    signature: Crypto.KeyListSignature,
     message: [UInt8],
   ): Bool {
+    let keyList = Crypto.KeyList()
 
-let publicKey = PublicKey(
-                publicKey: key.publicKey,
-                signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1
-            )
-    return publicKey.verify(
-                           signature: signature.decodeHex(),
-                           signedData: message,
-                           domainSeparationTag: "FLOW-V0.0-user",
-                           hashAlgorithm: HashAlgorithm.SHA2_256
-                       )
+    let signatureAlgorithm = SignatureAlgorithm(rawValue: key.signatureAlgorithm) ?? panic("invalid signature algorithm")
+    let hashAlgorithm = HashAlgorithm(rawValue: key.hashAlgorithm)  ?? panic("invalid hash algorithm")
+
+    keyList.add(
+      PublicKey(
+        publicKey: key.publicKey,
+        signatureAlgorithm: signatureAlgorithm,
+      ),
+      hashAlgorithm: hashAlgorithm,
+      weight: 1000.0,
+    )
+    log("VSE SYKI!!!!!!!!!!!!!!!!!!!!!!!!!")
+    log(message)
+    log(signature)
+
+    return keyList.verify(
+      signatureSet: [signature],
+      signedData: message
+    )
   }
 }

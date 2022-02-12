@@ -2,14 +2,14 @@
 	"emulators": {
 		"default": {
 			"port": 3569,
-			"serviceAccount": "emulator-account"
+			"serviceAccount": "cold-account"
 		}
 	},
 	"contracts": {
 		"ColdStorage": {
 			"source": "./contracts/ColdStorage.cdc",
 			"aliases": {
-				"testnet": "0x4c0baa55880a3a15"
+				"testnet": "0x782891ade780c548"
 			}
 		},
 		"FlowToken": {
@@ -34,11 +34,26 @@
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"key": "f4109145f06970bba51cf9dbac56c55980f94634ec24eec66785c0a49c1487ed"
+		},
+		"testnet-account": {
+			"address": "34bc02f930654a1d",
+			"key": "0cc541bbd212e67c6fde23913dbb5f3b448182cbed6d4220b1983e7bc29acdca"
+		},
+		"cold-account": {
+			"address": "782891ade780c548",
+			"key": "80c7c2a326dbf0c3bac8d047ee9923f4000fce6a209ef7839abf4ca2f443d637"
+		},
+		"cold": {
+			"address": "8b7e0b1056e8f550",
+			"key": "416bd124031a7857a0355024be33cbea801711bb054789d35e20fdda9d533fa8"
 		}
 	},
 	"deployments": {
 		"emulator": {
 			"emulator-account": ["ColdStorage"]
+		},
+		"testnet": {
+			"cold": ["ColdStorage"]
 		}
 	}
 }
