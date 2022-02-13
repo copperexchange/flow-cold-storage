@@ -59,6 +59,7 @@ describe("ColdStorage", () => {
 		console.log("deployed", contractName)
 
 		const accountA = await getAccountA();
+		await mintFlow(accountA, "10.0");
 		const vault = await setupColdStorageVault(accountA, publicKeyB)
 		console.log("accountB vault", vault)
 	});
@@ -84,10 +85,10 @@ describe("ColdStorage", () => {
 	it("should be able to transfer FLOW from a ColdStorage.Vault", async () => {
 		await deployColdStorage();
 
-		const accountA = await getAccountA();
-		await mintFlow(accountA, "10.0");
+		const recipient = await getAccountA();
+		await mintFlow(recipient, "10.0");
 
-		const [settedUp] = await setupColdStorageVault(accountA, publicKeyB)
+		const [settedUp] = await setupColdStorageVault(recipient, publicKeyB)
 
 		const { data: { address } } = settedUp.events.find((event) => event.type == 'flow.AccountCreated')
 
@@ -96,10 +97,9 @@ describe("ColdStorage", () => {
 		const [balance,] = await getBalance(address);
 		const [sequence,] = await getSequence(address);
 
-		console.log(address, balance, sequence)
+		console.log('settled account for vault: ', address, balance, sequence)
 
 		const sender = address
-		const recipient = accountA
 		const amount = "5.0"
 		const seqNo = sequence
 
@@ -120,11 +120,14 @@ describe("ColdStorage", () => {
 			message,
 		);
 
-		await transferTokens(
+		console.log('message, sign: ', message, signatureB)
+
+		const result = await transferTokens(
 			sender, recipient, amount, seqNo, signatureB
 		)
+		console.log('transferTokens', JSON.stringify(result))
 
-		const [balanceA,] = await getFlowBalance(accountA);
+		const [balanceA,] = await getFlowBalance(recipient);
 		expect(balanceA).toBe(toUFix64(15.00000000));
 
 		const [balanceB,] = await getBalance(address);

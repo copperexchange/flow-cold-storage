@@ -10,6 +10,7 @@ import { getAccountA } from "./common";
 
 export const deployColdStorage = async () => {
 	const deployed = await deployContractByName({  name: "ColdStorage" });
+	console.log(JSON.stringify(deployed))
 	return await getContractAddress("ColdStorage");
 };
 
