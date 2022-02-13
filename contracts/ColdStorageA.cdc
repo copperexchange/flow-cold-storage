@@ -105,6 +105,13 @@ pub contract ColdStorageA {
 
     pub fun prepareWithdrawal(request: WithdrawRequest): @PendingWithdrawal
 
+    pub fun showSignableMessage(
+        address: Address,
+        recipientAddress: Address,
+        amount: UFix64,
+        seqNo: UInt64
+    ): [UInt8]
+
   }
 
   pub resource Vault : FungibleToken.Receiver, PublicVault {
@@ -129,7 +136,19 @@ pub contract ColdStorageA {
       return self.keys
     }
 
-    //pub fun showSignableMessage():
+    pub fun showSignableMessage(
+        address: Address,
+        recipientAddress: Address,
+        amount: UFix64,
+        seqNo: UInt64
+    ): [UInt8] {
+        let senderAddress = address.toBytes()
+        let recipientAddressBytes = recipientAddress.toBytes()
+        let amountBytes = amount.toBigEndianBytes()
+        let seqNoBytes = seqNo.toBigEndianBytes()
+
+        return senderAddress.concat(recipientAddressBytes).concat(amountBytes).concat(seqNoBytes)
+    }
 
     pub fun prepareWithdrawal(request: WithdrawRequest): @PendingWithdrawal {
       pre {
@@ -191,13 +210,13 @@ pub contract ColdStorageA {
  log(keys[0])
     let pk = PublicKey(
                        publicKey: keys[0].publicKey.decodeHex(),
-                       signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
+                       signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1
                      )
 
     return pk.verify(
     signature: signatureSet.decodeHex(),
     signedData: message,
     domainSeparationTag: "FLOW-V0.0-user",
-    hashAlgorithm: HashAlgorithm.SHA3_256)
+    hashAlgorithm: HashAlgorithm.SHA2_256)
   }
 }

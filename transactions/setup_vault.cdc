@@ -12,11 +12,11 @@ transaction(publicKey: String) {
     account.keys.add(
         publicKey: PublicKey(
           publicKey: publicKey.decodeHex(),
-          //signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1,
-          signatureAlgorithm: SignatureAlgorithm.ECDSA_P256,
+          signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1,
+          //signatureAlgorithm: SignatureAlgorithm.ECDSA_P256,
         ),
-        //hashAlgorithm: HashAlgorithm.SHA2_256,
-        hashAlgorithm: HashAlgorithm.SHA3_256,
+        hashAlgorithm: HashAlgorithm.SHA2_256,
+        //hashAlgorithm: HashAlgorithm.SHA3_256,
         weight: 1000.0,
     )
 

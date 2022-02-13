@@ -64,6 +64,11 @@
 		"cold": {
 			"address": "8b7e0b1056e8f550",
 			"key": "416bd124031a7857a0355024be33cbea801711bb054789d35e20fdda9d533fa8"
+		},
+		"verifier": {
+			"address": "ECDSA_secp256k1",
+			"key": "5549465bd847dec483f0df41c57ca50f0f55d0fbf74575053c600975c1af279b",
+			"public": "e3f1706f56f5f7b5bed2565bdad541133c8c889442974b69c2b757971c3ea6494d6d65360232b0e1538c3c66078ff579d177acf749470d6dcfe514e97b1be867"
 		}
 	},
 	"deployments": {
