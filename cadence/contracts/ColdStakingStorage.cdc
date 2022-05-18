@@ -236,6 +236,14 @@ pub contract ColdStakingStorage {
       return self.key
     }
 
+    pub fun getNodeDelegatorID(): UInt32 {
+      return self.nodeDelegator?.id ?? panic("No node delegator")
+    }
+
+    pub fun getNodeDelegatorNodeID(): String {
+      return self.nodeDelegator?.nodeID ?? panic("No node delegator")
+    }
+
     pub fun prepareWithdrawal(request: WithdrawRequest): @PendingWithdrawal {
       pre {
         self.isValidSignature(request: request)

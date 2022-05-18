@@ -23,7 +23,7 @@ transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, se
       contractAddress: contractAddress,
       amount: amount,
       seqNo: seqNo,
-      stakeOperation: ColdStakingStorage.StakingOption.delegateNewTokens,
+      stakeOperation: ColdStakingStorage.StakeOperation.delegateNewTokens,
       sigSet: signatureSet,
     )
 

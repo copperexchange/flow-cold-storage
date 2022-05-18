@@ -31,7 +31,13 @@ export const setupColdStakingStorageVault = async (account, publicKey) => {
     const args = [publicKey, 2, 1];
     const signers = [account];
 
-    return sendTransaction({ name, args, signers });
+    const transactionResult = await sendTransaction({ name, args, signers });
+    if (transactionResult[1] == null) {
+        console.log("Setup Staking Vault: ", JSON.stringify(transactionResult))
+    } else {
+        console.log("Error: ", transactionResult[1])
+    }
+    return transactionResult;
 };
 
 export const transferTokens = async (sender, recipient, amount, seqNo, signatureB) => {
