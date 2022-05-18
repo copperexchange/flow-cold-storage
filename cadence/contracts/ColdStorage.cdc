@@ -58,7 +58,10 @@ pub contract ColdStorage {
       let amountBytes = self.amount.toBigEndianBytes()
       let seqNoBytes = self.seqNo.toBigEndianBytes()
 
-      return senderAddress.concat(recipientAddressBytes).concat(amountBytes).concat(seqNoBytes)
+      return senderAddress
+        .concat(recipientAddressBytes)
+        .concat(amountBytes)
+        .concat(seqNoBytes)
     }
   }
 

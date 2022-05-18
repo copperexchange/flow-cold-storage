@@ -4,7 +4,7 @@ import {
     executeScript,
     getContractAddress
 } from "flow-js-testing";
-import { getAccountA } from "./common";
+import { getAccountA, getAccountNode } from "./common";
 
 
 export const deployColdStakingStorage = async () => {
@@ -84,14 +84,28 @@ export const delegateStakeGeneralRequest = async (sender, contractAddress, amoun
     return transactionResult;
 };
 
-export const getBalance = async (account) => {
+export const migrateAccountToNewContract = async (sender, amount, seqNo, signatureA, nodeID) => {
+    const name = "migrate_account_to_new_contract";
+    const args = [sender, amount, seqNo, signatureA, nodeID];
+    const accountA = await getAccountA();
+    const signers = [accountA];
+    let sendTransactionResult = await sendTransaction({ name, args, signers });
+    if (sendTransactionResult[1] == null) {
+        console.log("Migrate Account to New Contract: ", JSON.stringify(sendTransactionResult))
+    } else {
+        console.log("Error: ", sendTransactionResult[1])
+    }
+    return sendTransactionResult;
+};
+
+export const getColdStorageStakingBalance = async (account) => {
     const name = "get_balance";
     const args = [account];
 
     return executeScript({ name, args });
 };
 
-export const getSequence = async (account) => {
+export const getColdStorageStakingSequence = async (account) => {
     const name = "get_sequence";
     const args = [account];
 

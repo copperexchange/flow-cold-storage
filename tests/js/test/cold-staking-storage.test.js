@@ -11,15 +11,22 @@ import {
     deployColdStakingStorage,
     setupColdStakingStorageVault,
     transferTokens,
-    getBalance, getSequence, registerNewDelegator, delegateStakeNewTokens, StakingOption, delegateStakeGeneralRequest,
+    getColdStorageStakingBalance,
+    getColdStorageStakingSequence,
+    registerNewDelegator,
+    delegateStakeNewTokens,
+    StakingOption,
+    delegateStakeGeneralRequest,
+    migrateAccountToNewContract,
 } from "../src/cold-staking-storage";
 import {
-    deployFlowStakingContracts, setupFlowStakingNode,
+    deployFlowStakingContracts, setupFlowStakingNode
 } from "../src/flow-staking-contract";
 
 import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
 
 import { toUFix64, getAccountA, getAccountB, getAccountNode } from "../src/common";
+import { deployColdStorage, setupColdStorageVault, getColdStorageBalance, getColdStorageSequence } from "../src/cold-storage";
 
 // We need to set timeout for a higher number, because some transactions might take up some time
 jest.setTimeout(10000);
@@ -108,7 +115,7 @@ describe("ColdStakingStorage deployment", () => {
 
         await mintFlow(address, "10.0");
 
-        const [balance, _] = await getBalance(address);
+        const [balance, _] = await getColdStorageStakingBalance(address);
 
 
         expect(balance).toBe(toUFix64(10.0));
@@ -137,8 +144,8 @@ describe("ColdStakingStorage transaction", () => {
 
         await mintFlow(address, "10.0");
 
-        const [balance,] = await getBalance(address);
-        const [sequence,] = await getSequence(address);
+        const [balance,] = await getColdStorageStakingBalance(address);
+        const [sequence,] = await getColdStorageStakingSequence(address);
 
         console.log('settled account for vault: ', address, balance, sequence)
 
@@ -173,7 +180,7 @@ describe("ColdStakingStorage transaction", () => {
         const [balanceA,] = await getFlowBalance(recipient);
         expect(balanceA).toBe(toUFix64(15.00000000));
 
-        const [balanceB,] = await getBalance(address);
+        const [balanceB,] = await getColdStorageStakingBalance(address);
         expect(balanceB).toBe(toUFix64(5.0));
     });
 });
@@ -226,7 +233,6 @@ describe("ColdStakingStorage staking", () => {
                 toBigEndianBytes(stakingOption, 8),
                 toBigEndianBytes(seqNo, 64),         // seqNo
             ]).toString("hex");
-
         return signWithPrivateKey(
             privateKeyB,
             sigAlgos.ECDSA_secp256k1,
@@ -236,7 +242,7 @@ describe("ColdStakingStorage staking", () => {
     }
 
     it("should be able to register to staking node", async () => {
-        const [sequence,] = await getSequence(address);
+        const [sequence,] = await getColdStorageStakingSequence(address);
         const signatureB = createSignedMessageToRegister(address, nodeID);
 
         const result = await registerNewDelegator(address, sequence, signatureB, nodeID)
@@ -244,12 +250,12 @@ describe("ColdStakingStorage staking", () => {
     });
 
     it("should be able to delegate stake tokens to a node", async () => {
-        let [sequence,] = await getSequence(address);
+        let [sequence,] = await getColdStorageStakingSequence(address);
         const signatureBRegister = createSignedMessageToRegister(address, nodeID);
         await registerNewDelegator(address, sequence, signatureBRegister, nodeID)
         const contractAddress = await getContractAddress("TestFlowIDTableStaking");
         await mintFlow(address, "10.0");
-        [sequence,] = await getSequence(address);
+        [sequence,] = await getColdStorageStakingSequence(address);
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, StakingOption.delegateNewTokens, sequence);
         const result = await delegateStakeNewTokens(address, contractAddress, amount, sequence, signatureBStakeRequest)
@@ -257,17 +263,17 @@ describe("ColdStakingStorage staking", () => {
         expect(nodeIDRegistered).toBe(nodeID);
         expect(delegatorIDRegistered).toBe(1);
         expect(parseInt(amountStakedRegistered)).toBe(amount);
-        const [balanceB,] = await getBalance(address);
+        const [balanceB,] = await getColdStorageStakingBalance(address);
         expect(balanceB).toBe(toUFix64(5.0));
     });
 
     it("should be able to undelegate tokens", async () => {
-        let [sequence,] = await getSequence(address);
+        let [sequence,] = await getColdStorageStakingSequence(address);
         const signatureBRegister = createSignedMessageToRegister(address, nodeID);
         await registerNewDelegator(address, sequence, signatureBRegister, nodeID)
         const contractAddress = await getContractAddress("TestFlowIDTableStaking");
         await mintFlow(address, "10.0");
-        [sequence,] = await getSequence(address);
+        [sequence,] = await getColdStorageStakingSequence(address);
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, StakingOption.delegateUnstakedTokens, sequence);
         const result = await delegateStakeGeneralRequest(address, contractAddress, amount, sequence, StakingOption.delegateUnstakedTokens, signatureBStakeRequest)
@@ -275,17 +281,17 @@ describe("ColdStakingStorage staking", () => {
         expect(nodeIDRegistered).toBe(nodeID);
         expect(delegatorIDRegistered).toBe(1);
         expect(parseInt(amountStakedRegistered)).toBe(amount);
-        const [balanceB,] = await getBalance(address);
+        const [balanceB,] = await getColdStorageStakingBalance(address);
         expect(balanceB).toBe(toUFix64(10.0));
     });
 
     it("should be able to withdraw unstaked tokens", async () => {
-        let [sequence,] = await getSequence(address);
+        let [sequence,] = await getColdStorageStakingSequence(address);
         const signatureBRegister = createSignedMessageToRegister(address, nodeID);
         await registerNewDelegator(address, sequence, signatureBRegister, nodeID)
         const contractAddress = await getContractAddress("TestFlowIDTableStaking");
         await mintFlow(address, "10.0");
-        [sequence,] = await getSequence(address);
+        [sequence,] = await getColdStorageStakingSequence(address);
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, StakingOption.withdrawUnstakedTokens, sequence);
         const result = await delegateStakeGeneralRequest(address, contractAddress, amount, sequence, StakingOption.withdrawUnstakedTokens, signatureBStakeRequest)
@@ -293,9 +299,66 @@ describe("ColdStakingStorage staking", () => {
         expect(nodeIDRegistered).toBe(nodeID);
         expect(delegatorIDRegistered).toBe(1);
         expect(parseInt(amountStakedRegistered)).toBe(amount);
-        const [balanceB,] = await getBalance(address);
+        const [balanceB,] = await getColdStorageStakingBalance(address);
         expect(balanceB).toBe(toUFix64(15.0));
     });
 });
 
+describe("ColdStakingStorage migration", () => {
+    let oldAccountAddress;
+    let serviceAccount;
+    const nodeID = "1";
 
+    beforeEach(async () => {
+        await setupEmulator(8085);
+        serviceAccount = await getAccountA();
+        oldAccountAddress = await setupOldVaultAccount();
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
+        return setupFlowStakingNode(nodeID)
+    });
+
+    afterEach(async () => {
+        return tearDownEmulator();
+    });
+
+    async function setupOldVaultAccount() {
+        await deployColdStorage();
+        await mintFlow(serviceAccount, "1.0");
+        const [setupTransaction] = await setupColdStorageVault(serviceAccount, publicKeyB)
+        const { data: { address } } = setupTransaction.events.find((event) => event.type === 'flow.AccountCreated')
+        return address;
+    }
+
+    function createSignedMessageToTransfer(sender, recipient, amount, sequence) {
+        const message = Buffer.concat([
+                userDomainTag,
+                Buffer.from(sender.slice(2), "hex"),
+                Buffer.from(recipient.slice(2), "hex"),
+                toBigEndianBytes((amount*100_000_000).toString(), 64),
+                toBigEndianBytes(sequence, 64),
+            ]
+        ).toString("hex");
+        return signWithPrivateKey(
+            privateKeyB,
+            sigAlgos.ECDSA_secp256k1,
+            hashAlgos.SHA2_256,
+            message,
+        );
+    }
+
+    it("should be able to migrate account to account with new contract", async () => {
+        await mintFlow(oldAccountAddress, "10.0");
+        const [sequence,] = await getColdStorageSequence(oldAccountAddress);
+        const [startingBalAsString, ] = await getColdStorageBalance(oldAccountAddress);
+        const startingBalance = parseFloat(startingBalAsString);
+        const signatureTransfer = createSignedMessageToTransfer(oldAccountAddress, serviceAccount, startingBalance, sequence);
+        const result = await migrateAccountToNewContract(oldAccountAddress, startingBalance, sequence, signatureTransfer, nodeID);
+        const { data: { address: createdAddress } } = result[0].events.find((event) => event.type === 'flow.AccountCreated')
+
+        const [oldAccountCurrentBalance,] = await getColdStorageBalance(oldAccountAddress);
+        expect(oldAccountCurrentBalance).toBe(toUFix64(0.0));
+        const [createdAddressCurrentBalance,] = await getColdStorageStakingBalance(createdAddress);
+        expect(createdAddressCurrentBalance).toBe(toUFix64(10.0));
+    });
+});

@@ -9,8 +9,8 @@ import {config} from "@onflow/config"
 import {
 	deployColdStorage,
 	setupColdStorageVault,
-	transferTokens,
-	getBalance, getSequence,
+	transferColdStorageTokens,
+	getColdStorageBalance, getColdStorageSequence,
 } from "../src/cold-storage";
 
 import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
@@ -76,7 +76,7 @@ describe("ColdStorage", () => {
 
 		await mintFlow(address, "10.0");
 
-		const [balance, _] = await getBalance(address);
+		const [balance, _] = await getColdStorageBalance(address);
 
 
 		expect(balance).toBe(toUFix64(10.0));
@@ -94,8 +94,8 @@ describe("ColdStorage", () => {
 
 		await mintFlow(address, "10.0");
 
-		const [balance,] = await getBalance(address);
-		const [sequence,] = await getSequence(address);
+		const [balance,] = await getColdStorageBalance(address);
+		const [sequence,] = await getColdStorageSequence(address);
 
 		console.log('settled account for vault: ', address, balance, sequence)
 
@@ -122,7 +122,7 @@ describe("ColdStorage", () => {
 
 		console.log('message, sign: ', message, signatureB)
 
-		const result = await transferTokens(
+		const result = await transferColdStorageTokens(
 			sender, recipient, amount, seqNo, signatureB
 		)
 		console.log('transferTokens', JSON.stringify(result))
@@ -130,7 +130,7 @@ describe("ColdStorage", () => {
 		const [balanceA,] = await getFlowBalance(recipient);
 		expect(balanceA).toBe(toUFix64(15.00000000));
 
-		const [balanceB,] = await getBalance(address);
+		const [balanceB,] = await getColdStorageBalance(address);
 		expect(balanceB).toBe(toUFix64(5.0));
 	});
 });
