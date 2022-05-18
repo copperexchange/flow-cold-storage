@@ -24,7 +24,7 @@ pub contract ColdStorage {
   pub struct interface ColdStorageRequest {
     pub var signature: Crypto.KeyListSignature
     pub var seqNo: UInt64
-    pub var spenderAddress: Address
+    pub var senderAddress: Address
 
     pub fun signableBytes(): [UInt8]
   }
@@ -33,18 +33,18 @@ pub contract ColdStorage {
     pub var signature: Crypto.KeyListSignature
     pub var seqNo: UInt64
 
-    pub var spenderAddress: Address
+    pub var senderAddress: Address
     pub var recipientAddress: Address
     pub var amount: UFix64
 
     init(
-      spenderAddress: Address,
+      senderAddress: Address,
       recipientAddress: Address,
       amount: UFix64,
       seqNo: UInt64,
       signature: Crypto.KeyListSignature,
     ) {
-      self.spenderAddress = spenderAddress
+      self.senderAddress = senderAddress
       self.recipientAddress = recipientAddress
       self.amount = amount
 
@@ -53,12 +53,12 @@ pub contract ColdStorage {
     }
 
     pub fun signableBytes(): [UInt8] {
-      let spenderAddress = self.spenderAddress.toBytes()
+      let senderAddress = self.senderAddress.toBytes()
       let recipientAddressBytes = self.recipientAddress.toBytes()
       let amountBytes = self.amount.toBigEndianBytes()
       let seqNoBytes = self.seqNo.toBigEndianBytes()
 
-      return spenderAddress.concat(recipientAddressBytes).concat(amountBytes).concat(seqNoBytes)
+      return senderAddress.concat(recipientAddressBytes).concat(amountBytes).concat(seqNoBytes)
     }
   }
 
@@ -145,7 +145,7 @@ pub contract ColdStorage {
     access(self) fun isValidSignature(request: {ColdStorage.ColdStorageRequest}): Bool {
       pre {
         self.seqNo == request.seqNo
-        self.address == request.spenderAddress
+        self.address == request.senderAddress
       }
 
       return ColdStorage.validateSignature(

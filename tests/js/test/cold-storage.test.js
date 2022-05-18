@@ -42,7 +42,7 @@ function toBigEndianBytes(number, bits) {
 describe("ColdStorage", () => {
 	// Instantiate emulator and path to Cadence files
 	beforeEach(async () => {
-		const basePath = path.resolve(__dirname, "../../../");
+		const basePath = path.resolve(__dirname, "../../../cadence");
 		const port = 8083;
 		await init(basePath, port);
 		config().put("PRIVATE_KEY", "8e3983030d2af1fa01c078241ad7f699d492e0239247f38d5a96cb959e436531")

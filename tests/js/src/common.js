@@ -7,3 +7,5 @@ export const toUFix64 = (value) => value.toFixed(UFIX64_PRECISION);
 
 export const getAccountA = async () => getAccountAddress("AccountA");
 export const getAccountB = async () => getAccountAddress("AccountB");
+export const getAccountNode = async () => getAccountAddress("node-account");
+export const getAccountFlowToken = async () => getAccountAddress("flow-token-account");
