@@ -3,22 +3,19 @@ import FlowToken from "./FlowToken.cdc"
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
 import TestFlowIDTableStaking from "../contracts/TestFlowIDTableStaking.cdc"
 
-transaction(publicKey: String, signatureAlgorithmRaw: UInt8, hashAlgorithmRaw: UInt8) {
+transaction(publicKey: String) {
   prepare(signer: AuthAccount) {
     let account = AuthAccount(payer: signer)
 
     log(account.storageUsed)
     log(account.storageCapacity)
 
-    let signatureAlgorithm = SignatureAlgorithm(rawValue: signatureAlgorithmRaw) ?? panic("invalid signature algorithm")
-    let hashAlgorithm = HashAlgorithm(rawValue: hashAlgorithmRaw) ?? panic("invalid hash algorithm")
-
     account.keys.add(
         publicKey: PublicKey(
           publicKey: publicKey.decodeHex(),
-          signatureAlgorithm: signatureAlgorithm,
+          signatureAlgorithm: SignatureAlgorithm.ECDSA_secp256k1,
         ),
-        hashAlgorithm: hashAlgorithm,
+        hashAlgorithm: HashAlgorithm.SHA2_256,
         weight: 1000.0,
     )
 

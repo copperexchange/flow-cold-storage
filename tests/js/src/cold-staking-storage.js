@@ -28,7 +28,7 @@ export const deployColdStakingStorage = async () => {
 
 export const setupColdStakingStorageVault = async (account, publicKey) => {
     const name = "setup_staking_vault";
-    const args = [publicKey, 2, 1];
+    const args = [publicKey];
     const signers = [account];
 
     const transactionResult = await sendTransaction({ name, args, signers });
