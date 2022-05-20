@@ -2,7 +2,7 @@ import Crypto
 
 import FungibleToken from "./FungibleToken"
 import FlowToken from "./FlowToken"
-import TestFlowIDTableStaking from "./TestFlowIDTableStaking"
+import FlowIDTableStaking from "./FlowIDTableStaking"
 
 pub contract ColdStakingStorage {
   pub enum StakeOperation: UInt8 {
@@ -174,9 +174,9 @@ pub contract ColdStakingStorage {
 
     access(self) var pendingVault: @FungibleToken.Vault
     access(self) var request: DelegateStakeRequest
-    access(self) var nodeDelegatorRef: &TestFlowIDTableStaking.NodeDelegator
+    access(self) var nodeDelegatorRef: &FlowIDTableStaking.NodeDelegator
 
-    init(pendingVault: @FungibleToken.Vault, request: DelegateStakeRequest, nodeDelegatorRef: &TestFlowIDTableStaking.NodeDelegator) {
+    init(pendingVault: @FungibleToken.Vault, request: DelegateStakeRequest, nodeDelegatorRef: &FlowIDTableStaking.NodeDelegator) {
       self.pendingVault <- pendingVault
       self.request = request
       self.nodeDelegatorRef = nodeDelegatorRef
@@ -210,7 +210,7 @@ pub contract ColdStakingStorage {
 
     pub fun executeDelegateStakeGeneralRequest(request: DelegateStakeRequest)
 
-    pub fun updateNodeDelegator(request: NodeDelegatorChangeRequest, newNodeDelegator: @TestFlowIDTableStaking.NodeDelegator?)
+    pub fun updateNodeDelegator(request: NodeDelegatorChangeRequest, newNodeDelegator: @FlowIDTableStaking.NodeDelegator?)
   }
 
   pub resource Vault : FungibleToken.Receiver, PublicVault {
@@ -218,7 +218,7 @@ pub contract ColdStakingStorage {
     access(self) var key: Key
     access(self) var contents: @FungibleToken.Vault
     access(self) var seqNo: UInt64
-    access(self) var nodeDelegator: @TestFlowIDTableStaking.NodeDelegator?
+    access(self) var nodeDelegator: @FlowIDTableStaking.NodeDelegator?
 
     pub fun deposit(from: @FungibleToken.Vault) {
       self.contents.deposit(from: <-from)
@@ -297,7 +297,7 @@ pub contract ColdStakingStorage {
       }
     }
 
-    pub fun updateNodeDelegator(request: NodeDelegatorChangeRequest, newNodeDelegator: @TestFlowIDTableStaking.NodeDelegator?) {
+    pub fun updateNodeDelegator(request: NodeDelegatorChangeRequest, newNodeDelegator: @FlowIDTableStaking.NodeDelegator?) {
       pre {
         self.isValidSignature(request: request)
       }
@@ -309,9 +309,9 @@ pub contract ColdStakingStorage {
       self.nodeDelegator <-! newNodeDelegator
     }
 
-    access(self) fun borrowNodeDelegator(): &TestFlowIDTableStaking.NodeDelegator {
+    access(self) fun borrowNodeDelegator(): &FlowIDTableStaking.NodeDelegator {
       if let nodeDelegator <- self.nodeDelegator <- nil {
-          let nodeDelegatorRef = &nodeDelegator as? &TestFlowIDTableStaking.NodeDelegator
+          let nodeDelegatorRef = &nodeDelegator as? &FlowIDTableStaking.NodeDelegator
           self.nodeDelegator <-! nodeDelegator
           return nodeDelegatorRef
       }
@@ -335,7 +335,7 @@ pub contract ColdStakingStorage {
       )
     }
 
-    init(address: Address, key: Key, contents: @FungibleToken.Vault, nodeDelegator: @TestFlowIDTableStaking.NodeDelegator?) {
+    init(address: Address, key: Key, contents: @FungibleToken.Vault, nodeDelegator: @FlowIDTableStaking.NodeDelegator?) {
       self.key = key
       self.seqNo = UInt64(0)
       self.contents <- contents
@@ -353,7 +353,7 @@ pub contract ColdStakingStorage {
     address: Address,
     key: Key,
     contents: @FungibleToken.Vault,
-    nodeDelegator: @TestFlowIDTableStaking.NodeDelegator?,
+    nodeDelegator: @FlowIDTableStaking.NodeDelegator?,
   ): @Vault {
     return <- create Vault(address: address, key: key, contents: <- contents, nodeDelegator: <- nodeDelegator)
   }

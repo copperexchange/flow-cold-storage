@@ -3,7 +3,7 @@ import FungibleToken from "./FungibleToken.cdc"
 import FlowToken from "./FlowToken.cdc"
 import ColdStorage from "../contracts/ColdStorage.cdc"
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
-import TestFlowIDTableStaking from "../contracts/TestFlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../contracts/FlowIDTableStaking.cdc"
 
 transaction(senderAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String, nodeID: String) {
   prepare(signer: AuthAccount) {
@@ -23,7 +23,7 @@ transaction(senderAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: S
 
     let flowVault <- FlowToken.createEmptyVault()
     let coldStorageKey = oldAccountVaultRef.getKey()
-    let nodeDelegator <- TestFlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+    let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
 
     let accountKey = ColdStakingStorage.Key(
       publicKey: key.publicKey.publicKey,

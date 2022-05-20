@@ -4,7 +4,7 @@ import {
     init,
     mintFlow,
     getContractAddress,
-    getFlowBalance, sendTransaction,
+    getFlowBalance,
 } from "flow-js-testing";
 import { config } from "@onflow/config"
 import {
@@ -58,7 +58,7 @@ function tearDownEmulator() {
     return emulator.stop();
 }
 
-describe("TestFlowIDTableStaking deployment", () => {
+describe("FlowIDTableStaking deployment", () => {
     beforeEach(async () => {
         return await setupEmulator(8080);
     });
@@ -253,13 +253,13 @@ describe("ColdStakingStorage staking", () => {
         let [sequence,] = await getColdStorageStakingSequence(address);
         const signatureBRegister = createSignedMessageToRegister(address, nodeID);
         await registerNewDelegator(address, sequence, signatureBRegister, nodeID)
-        const contractAddress = await getContractAddress("TestFlowIDTableStaking");
+        const contractAddress = await getContractAddress("FlowIDTableStaking");
         await mintFlow(address, "10.0");
         [sequence,] = await getColdStorageStakingSequence(address);
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, StakingOption.delegateNewTokens, sequence);
         const result = await delegateStakeNewTokens(address, contractAddress, amount, sequence, signatureBStakeRequest)
-        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('TestFlowIDTableStaking.DelegatorTokensCommitted'))
+        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('FlowIDTableStaking.DelegatorTokensCommitted'))
         expect(nodeIDRegistered).toBe(nodeID);
         expect(delegatorIDRegistered).toBe(1);
         expect(parseInt(amountStakedRegistered)).toBe(amount);
@@ -271,13 +271,13 @@ describe("ColdStakingStorage staking", () => {
         let [sequence,] = await getColdStorageStakingSequence(address);
         const signatureBRegister = createSignedMessageToRegister(address, nodeID);
         await registerNewDelegator(address, sequence, signatureBRegister, nodeID)
-        const contractAddress = await getContractAddress("TestFlowIDTableStaking");
+        const contractAddress = await getContractAddress("FlowIDTableStaking");
         await mintFlow(address, "10.0");
         [sequence,] = await getColdStorageStakingSequence(address);
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, StakingOption.delegateUnstakedTokens, sequence);
         const result = await delegateStakeGeneralRequest(address, contractAddress, amount, sequence, StakingOption.delegateUnstakedTokens, signatureBStakeRequest)
-        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('TestFlowIDTableStaking.DelegatorTokensCommitted'))
+        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('FlowIDTableStaking.DelegatorTokensCommitted'))
         expect(nodeIDRegistered).toBe(nodeID);
         expect(delegatorIDRegistered).toBe(1);
         expect(parseInt(amountStakedRegistered)).toBe(amount);
@@ -289,13 +289,13 @@ describe("ColdStakingStorage staking", () => {
         let [sequence,] = await getColdStorageStakingSequence(address);
         const signatureBRegister = createSignedMessageToRegister(address, nodeID);
         await registerNewDelegator(address, sequence, signatureBRegister, nodeID)
-        const contractAddress = await getContractAddress("TestFlowIDTableStaking");
+        const contractAddress = await getContractAddress("FlowIDTableStaking");
         await mintFlow(address, "10.0");
         [sequence,] = await getColdStorageStakingSequence(address);
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, StakingOption.withdrawUnstakedTokens, sequence);
         const result = await delegateStakeGeneralRequest(address, contractAddress, amount, sequence, StakingOption.withdrawUnstakedTokens, signatureBStakeRequest)
-        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('TestFlowIDTableStaking.DelegatorUnstakedTokensWithdrawn'))
+        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('FlowIDTableStaking.DelegatorUnstakedTokensWithdrawn'))
         expect(nodeIDRegistered).toBe(nodeID);
         expect(delegatorIDRegistered).toBe(1);
         expect(parseInt(amountStakedRegistered)).toBe(amount);

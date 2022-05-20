@@ -1,7 +1,7 @@
 import Crypto
 
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
-import TestFlowIDTableStaking from "../contracts/TestFlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../contracts/FlowIDTableStaking.cdc"
 
 transaction(senderAddress: Address, seqNo: UInt64, nodeID: String, signatureA: String) {
 
@@ -24,7 +24,7 @@ transaction(senderAddress: Address, seqNo: UInt64, nodeID: String, signatureA: S
         signature: signatureSet,
       )
 
-    let newNodeDelegator <- TestFlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+    let newNodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
     publicVault.updateNodeDelegator(request: request, newNodeDelegator: <-newNodeDelegator)
   }
 }

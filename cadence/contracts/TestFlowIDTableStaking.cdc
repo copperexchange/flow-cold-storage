@@ -1,6 +1,6 @@
 /*
 
-    TestTestFlowIDTableStaking
+    TestFlowIDTableStaking
 
     This is a test contract to act as an API for
     testing the lockbox and staking proxy contracts.
@@ -10,7 +10,7 @@
 import FungibleToken from "./FungibleToken"
 import FlowToken from "./FlowToken"
 
-pub contract TestFlowIDTableStaking {
+pub contract FlowIDTableStaking {
 
     /*********** ID Table and Staking Composite Type Definitions *************/
 
@@ -149,7 +149,7 @@ pub contract TestFlowIDTableStaking {
 
         /// Withdraw tokens from the unstaked bucket
         pub fun withdrawUnstakedTokens(amount: UFix64): @FungibleToken.Vault {
-            let flowTokenMinter = TestFlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
+            let flowTokenMinter = FlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
                 ?? panic("Could not borrow minter reference")
 
             return <- flowTokenMinter.mintTokens(amount: amount)
@@ -158,7 +158,7 @@ pub contract TestFlowIDTableStaking {
 
         /// Withdraw tokens from the rewarded bucket
         pub fun withdrawRewardedTokens(amount: UFix64): @FungibleToken.Vault {
-            let flowTokenMinter = TestFlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
+            let flowTokenMinter = FlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
                 ?? panic("Could not borrow minter reference")
 
             return <- flowTokenMinter.mintTokens(amount: amount)
@@ -229,7 +229,7 @@ pub contract TestFlowIDTableStaking {
 
         /// Withdraw tokens from the unstaked bucket
         pub fun withdrawUnstakedTokens(amount: UFix64): @FungibleToken.Vault {
-            let flowTokenMinter = TestFlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
+            let flowTokenMinter = FlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
                 ?? panic("Could not borrow minter reference")
 
             emit DelegatorUnstakedTokensWithdrawn(nodeID: self.nodeID, delegatorID: self.id, amount: amount)
@@ -238,7 +238,7 @@ pub contract TestFlowIDTableStaking {
 
         /// Withdraw tokens from the rewarded bucket
         pub fun withdrawRewardedTokens(amount: UFix64): @FungibleToken.Vault {
-            let flowTokenMinter = TestFlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
+            let flowTokenMinter = FlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
                 ?? panic("Could not borrow minter reference")
 
             emit DelegatorRewardTokensWithdrawn(nodeID: self.nodeID, delegatorID: self.id, amount: amount)

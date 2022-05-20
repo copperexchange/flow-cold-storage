@@ -4,18 +4,18 @@ import {
     executeScript,
     getContractAddress
 } from "flow-js-testing";
-import { getAccountA, getAccountNode } from "./common";
+import { getAccountA} from "./common";
 
 
 export const deployColdStakingStorage = async () => {
     const FungibleToken = await getContractAddress("FungibleToken");
     const FlowToken = await getContractAddress("FlowToken");
-    const TestFlowIDTableStaking = await getContractAddress("TestFlowIDTableStaking");
+    const FlowIDTableStaking = await getContractAddress("FlowIDTableStaking");
 
     const addressMap = {
         FungibleToken,
         FlowToken,
-        TestFlowIDTableStaking,
+        FlowIDTableStaking,
     };
     const deployed = await deployContractByName({ name: "ColdStakingStorage", addressMap: addressMap });
     if (deployed[1] == null) {

@@ -1,7 +1,7 @@
 import FungibleToken from "./FungibleToken.cdc"
 import FlowToken from "./FlowToken.cdc"
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
-import TestFlowIDTableStaking from "../contracts/TestFlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../contracts/FlowIDTableStaking.cdc"
 
 transaction(publicKey: String) {
   prepare(signer: AuthAccount) {
@@ -29,7 +29,7 @@ transaction(publicKey: String) {
       hashAlgorithm: key.hashAlgorithm,
     )
 
-    let nilNodeDelegator: @TestFlowIDTableStaking.NodeDelegator? <- nil
+    let nilNodeDelegator: @FlowIDTableStaking.NodeDelegator? <- nil
     let coldVault <- ColdStakingStorage.createVault(
       address: account.address,
       key: accountKey,

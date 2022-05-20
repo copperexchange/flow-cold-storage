@@ -1,20 +1,20 @@
 import {
-    deployContractByName,
     sendTransaction,
-    executeScript,
-    getContractAddress
+    getContractAddress, getContractCode, deployContract
 } from "flow-js-testing";
-import { getAccountA, getAccountNode } from "./common";
+import { getAccountNode } from "./common";
 
 
 export const deployFlowStakingContracts = async () => {
-    const deployed = await deployContractByName({ name: "TestFlowIDTableStaking" });
+    const nodeAccount = await getAccountNode();
+    const contractCode = await getContractCode({ name: "TestFlowIDTableStaking", addressMap: {} })
+    const deployed = await deployContract({ name: "FlowIDTableStaking", to: nodeAccount, code: contractCode });
     if (deployed[1] == null) {
-        console.log("Deployed TestFlowIDTableStaking: ", JSON.stringify(deployed))
+        console.log("Deployed test FlowIDTableStaking: ", JSON.stringify(deployed))
     } else {
         console.log("Error: ", deployed[1])
     }
-    return await getContractAddress("TestFlowIDTableStaking");
+    return await getContractAddress("FlowIDTableStaking");
 };
 
 export const setupFlowStakingNode = async (nodeId) => {
