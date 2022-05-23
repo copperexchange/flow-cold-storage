@@ -2,7 +2,7 @@ import Crypto
 
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
 
-transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String) {
+transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, seqNo: UInt64, nodeID: String, signatureA: String) {
 
   let pendingDelegateStakeNewTokens: @ColdStakingStorage.PendingDelegateStakeNewTokens
 
@@ -23,6 +23,7 @@ transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, se
       contractAddress: contractAddress,
       amount: amount,
       seqNo: seqNo,
+      nodeID: nodeID,
       stakeOperation: ColdStakingStorage.StakeOperation.delegateNewTokens,
       sigSet: signatureSet,
     )

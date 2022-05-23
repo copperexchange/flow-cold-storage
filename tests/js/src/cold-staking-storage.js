@@ -45,26 +45,19 @@ export const transferTokens = async (sender, recipient, amount, seqNo, signature
     const args = [sender, recipient, amount, seqNo, signatureB];
     const accountA = await getAccountA();
     const signers = [accountA];
-    return sendTransaction({ name, args, signers });
-};
 
-export const registerNewDelegator = async (sender, seqNo, signatureB, nodeID) => {
-    const name = "register_new_delegator";
-    const args = [sender, seqNo, nodeID, signatureB];
-    const accountA = await getAccountA();
-    const signers = [accountA];
-    let transactionResult = await sendTransaction({ name, args, signers });
+    const transactionResult = await sendTransaction({ name, args, signers });
     if (transactionResult[1] == null) {
-        console.log("Registered New Delegator: ", JSON.stringify(transactionResult))
+        console.log("Transfer Tokens: ", JSON.stringify(transactionResult))
     } else {
         console.log("Error: ", transactionResult[1])
     }
     return transactionResult;
 };
 
-export const delegateStakeNewTokens = async (sender, contractAddress, amount, seqNo, signatureB) => {
+export const delegateStakeNewTokens = async (sender, contractAddress, amount, seqNo, nodeID, signatureB) => {
     const name = "delegate_stake_new_tokens";
-    const args = [sender, contractAddress, amount, seqNo, signatureB];
+    const args = [sender, contractAddress, amount, seqNo, nodeID, signatureB];
     const accountA = await getAccountA();
     const signers = [accountA];
     let transactionResult = await sendTransaction({ name, args, signers });
@@ -76,9 +69,9 @@ export const delegateStakeNewTokens = async (sender, contractAddress, amount, se
     return transactionResult;
 };
 
-export const delegateStakeGeneralRequest = async (sender, contractAddress, amount, seqNo, stakingOption, signatureB) => {
+export const delegateStakeGeneralRequest = async (sender, contractAddress, amount, seqNo, nodeID, stakingOption, signatureB) => {
     const name = "delegate_stake_general_request";
-    const args = [sender, contractAddress, amount, seqNo, stakingOption, signatureB];
+    const args = [sender, contractAddress, amount, seqNo, nodeID, stakingOption, signatureB];
     const accountA = await getAccountA();
     const signers = [accountA];
     let transactionResult = await sendTransaction({ name, args, signers });
@@ -90,9 +83,9 @@ export const delegateStakeGeneralRequest = async (sender, contractAddress, amoun
     return transactionResult;
 };
 
-export const migrateAccountToNewContract = async (sender, amount, seqNo, signatureA, nodeID) => {
+export const migrateAccountToNewContract = async (sender, transferAmount, stakeAmount, seqNo, signatureA, nodeID) => {
     const name = "migrate_account_to_new_contract";
-    const args = [sender, amount, seqNo, signatureA, nodeID];
+    const args = [sender, transferAmount, stakeAmount, seqNo, nodeID, signatureA];
     const accountA = await getAccountA();
     const signers = [accountA];
     let sendTransactionResult = await sendTransaction({ name, args, signers });
@@ -104,15 +97,28 @@ export const migrateAccountToNewContract = async (sender, amount, seqNo, signatu
     return sendTransactionResult;
 };
 
-export const getColdStorageStakingBalance = async (account) => {
+export const getBalance = async (account) => {
     const name = "get_balance";
+    const args = [account];
+
+    let executeScriptResult = await executeScript({ name, args });
+    if (executeScriptResult[1] == null) {
+        console.log("Execute Balance: ", JSON.stringify(executeScriptResult))
+    } else {
+        console.log("Error: ", executeScriptResult[1])
+    }
+    return executeScriptResult;
+};
+
+export const getSequence = async (account) => {
+    const name = "get_sequence";
     const args = [account];
 
     return executeScript({ name, args });
 };
 
-export const getColdStorageStakingSequence = async (account) => {
-    const name = "get_sequence";
+export const getNodeDelegatorIds = async (account) => {
+    const name = "get_node_delegator_ids";
     const args = [account];
 
     return executeScript({ name, args });

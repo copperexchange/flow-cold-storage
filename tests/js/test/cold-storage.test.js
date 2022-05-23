@@ -10,12 +10,13 @@ import {
 	deployColdStorage,
 	setupColdStorageVault,
 	transferColdStorageTokens,
-	getColdStorageBalance, getColdStorageSequence,
 } from "../src/cold-storage";
 
 import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
 
 import { toUFix64, getAccountA, getAccountB } from "../src/common";
+import { deployColdStakingStorage, getBalance, getSequence } from "../src/cold-staking-storage";
+import { deployFlowStakingContracts } from "../src/flow-staking-contract";
 
 // We need to set timeout for a higher number, because some transactions might take up some time
 jest.setTimeout(10000);
@@ -55,6 +56,8 @@ describe("ColdStorage", () => {
 	});
 
 	it("should be able to create an empty ColdStorage.Vault", async () => {
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
 		const contractName = await deployColdStorage();
 		console.log("deployed", contractName)
 
@@ -65,6 +68,8 @@ describe("ColdStorage", () => {
 	});
 
 	it("should be able to create a ColdStorage.Vault and fund with FLOW", async () => {
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
 		await deployColdStorage();
 
 		const accountA = await getAccountA();
@@ -76,13 +81,15 @@ describe("ColdStorage", () => {
 
 		await mintFlow(address, "10.0");
 
-		const [balance, _] = await getColdStorageBalance(address);
+		const [balance, _] = await getBalance(address);
 
 
 		expect(balance).toBe(toUFix64(10.0));
 	});
 
 	it("should be able to transfer FLOW from a ColdStorage.Vault", async () => {
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
 		await deployColdStorage();
 
 		const recipient = await getAccountA();
@@ -94,8 +101,8 @@ describe("ColdStorage", () => {
 
 		await mintFlow(address, "10.0");
 
-		const [balance,] = await getColdStorageBalance(address);
-		const [sequence,] = await getColdStorageSequence(address);
+		const [balance,] = await getBalance(address);
+		const [sequence,] = await getSequence(address);
 
 		console.log('settled account for vault: ', address, balance, sequence)
 
@@ -130,7 +137,7 @@ describe("ColdStorage", () => {
 		const [balanceA,] = await getFlowBalance(recipient);
 		expect(balanceA).toBe(toUFix64(15.00000000));
 
-		const [balanceB,] = await getColdStorageBalance(address);
+		const [balanceB,] = await getBalance(address);
 		expect(balanceB).toBe(toUFix64(5.0));
 	});
 });

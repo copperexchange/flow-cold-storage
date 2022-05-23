@@ -78,6 +78,7 @@ pub contract ColdStakingStorage {
     pub var senderAddress: Address
     pub var contractAddress: Address
     pub var amount: UFix64
+    pub var nodeID: String
     pub var stakeOperation: StakeOperation
 
     init(
@@ -85,6 +86,7 @@ pub contract ColdStakingStorage {
       contractAddress: Address,
       amount: UFix64,
       seqNo: UInt64,
+      nodeID: String,
       stakeOperation: StakeOperation,
       signature: Crypto.KeyListSignature,
     ) {
@@ -92,6 +94,7 @@ pub contract ColdStakingStorage {
       self.contractAddress = contractAddress
       self.amount = amount
       self.seqNo = seqNo
+      self.nodeID = nodeID
       self.stakeOperation = stakeOperation
       self.signature = signature
     }
@@ -102,40 +105,14 @@ pub contract ColdStakingStorage {
       let amountBytes = self.amount.toBigEndianBytes()
       let stakeOperationBytes = self.stakeOperation.rawValue.toBigEndianBytes()
       let seqNoBytes = self.seqNo.toBigEndianBytes()
+      let nodeIDBytes = self.nodeID.utf8
 
       return senderAddress
             .concat(contractAddressBytes)
             .concat(amountBytes)
+            .concat(nodeIDBytes)
             .concat(stakeOperationBytes)
             .concat(seqNoBytes)
-    }
-  }
-
-  pub struct NodeDelegatorChangeRequest: ColdStakingStorageRequest {
-    pub var signature: Crypto.KeyListSignature
-    pub var seqNo: UInt64
-    pub var senderAddress: Address
-
-    pub var nodeID: String
-
-    init(
-      senderAddress: Address,
-      seqNo: UInt64,
-      nodeID: String,
-      signature: Crypto.KeyListSignature,
-    ) {
-      self.seqNo = seqNo
-      self.senderAddress = senderAddress
-      self.nodeID = nodeID
-      self.signature = signature
-    }
-
-    pub fun signableBytes(): [UInt8] {
-      let senderAddress = self.senderAddress.toBytes()
-      let nodeIDBytes = self.nodeID.utf8
-      let seqNoBytes = self.seqNo.toBigEndianBytes()
-
-      return senderAddress.concat(nodeIDBytes).concat(seqNoBytes)
     }
   }
 
@@ -204,13 +181,15 @@ pub contract ColdStakingStorage {
 
     pub fun getKey(): Key
 
+    pub fun getNodeDelegatorID(nodeID: String): UInt32
+
+    pub fun getNodeDelegatorNodeIDs(): [String]
+
     pub fun prepareWithdrawal(request: WithdrawRequest): @PendingWithdrawal
 
     pub fun prepareDelegateStakeNewTokens(request: DelegateStakeRequest): @PendingDelegateStakeNewTokens
 
     pub fun executeDelegateStakeGeneralRequest(request: DelegateStakeRequest)
-
-    pub fun updateNodeDelegator(request: NodeDelegatorChangeRequest, newNodeDelegator: @FlowIDTableStaking.NodeDelegator?)
   }
 
   pub resource Vault : FungibleToken.Receiver, PublicVault {
@@ -218,7 +197,7 @@ pub contract ColdStakingStorage {
     access(self) var key: Key
     access(self) var contents: @FungibleToken.Vault
     access(self) var seqNo: UInt64
-    access(self) var nodeDelegator: @FlowIDTableStaking.NodeDelegator?
+    access(self) var nodeDelegators: @{String: FlowIDTableStaking.NodeDelegator}
 
     pub fun deposit(from: @FungibleToken.Vault) {
       self.contents.deposit(from: <-from)
@@ -236,12 +215,16 @@ pub contract ColdStakingStorage {
       return self.key
     }
 
-    pub fun getNodeDelegatorID(): UInt32 {
-      return self.nodeDelegator?.id ?? panic("No node delegator")
+    pub fun getNodeDelegatorID(nodeID: String): UInt32 {
+      let nodeDelegator <- self.nodeDelegators.remove(key: nodeID) ?? panic("Unable to get Node Delegator for given node id")
+      let id = nodeDelegator.id
+      let emptyNodeDelegator <- self.nodeDelegators.insert(key:nodeID, <- nodeDelegator)
+      destroy emptyNodeDelegator
+      return id
     }
 
-    pub fun getNodeDelegatorNodeID(): String {
-      return self.nodeDelegator?.nodeID ?? panic("No node delegator")
+    pub fun getNodeDelegatorNodeIDs(): [String] {
+      return self.nodeDelegators.keys
     }
 
     pub fun prepareWithdrawal(request: WithdrawRequest): @PendingWithdrawal {
@@ -264,11 +247,17 @@ pub contract ColdStakingStorage {
       post {
         self.seqNo == request.seqNo + UInt64(1)
       }
-
-      let nodeDelegatorRef = self.borrowNodeDelegator()
       self.incrementSequenceNumber()
 
-      return <- create PendingDelegateStakeNewTokens(pendingVault: <- self.contents.withdraw(amount: request.amount), request: request, nodeDelegatorRef: nodeDelegatorRef)
+      if let nodeDelegator <- self.nodeDelegators.remove(key: request.nodeID) {
+        let nodeDelegatorRef = &nodeDelegator as? &FlowIDTableStaking.NodeDelegator
+        let emptyNodeDelegator <- self.nodeDelegators.insert(key:request.nodeID, <- nodeDelegator)
+        destroy emptyNodeDelegator
+        return <- create PendingDelegateStakeNewTokens(pendingVault: <- self.contents.withdraw(amount: request.amount), request: request, nodeDelegatorRef: nodeDelegatorRef)
+      } else {
+        let nodeDelegatorRef = self.registerNewDelegator(nodeID: request.nodeID)
+        return <- create PendingDelegateStakeNewTokens(pendingVault: <- self.contents.withdraw(amount: request.amount), request: request, nodeDelegatorRef: nodeDelegatorRef)
+      }
     }
 
     pub fun executeDelegateStakeGeneralRequest(request: DelegateStakeRequest) {
@@ -279,7 +268,7 @@ pub contract ColdStakingStorage {
         self.seqNo == request.seqNo + UInt64(1)
       }
 
-      let nodeDelegatorRef = self.borrowNodeDelegator()
+      let nodeDelegatorRef = self.borrowNodeDelegator(nodeID: request.nodeID)
       self.incrementSequenceNumber()
       switch request.stakeOperation {
         case StakeOperation.delegateUnstakedTokens:
@@ -297,29 +286,26 @@ pub contract ColdStakingStorage {
       }
     }
 
-    pub fun updateNodeDelegator(request: NodeDelegatorChangeRequest, newNodeDelegator: @FlowIDTableStaking.NodeDelegator?) {
-      pre {
-        self.isValidSignature(request: request)
-      }
-      post {
-        self.seqNo == request.seqNo + UInt64(1)
-      }
-
-      self.incrementSequenceNumber()
-      self.nodeDelegator <-! newNodeDelegator
-    }
-
-    access(self) fun borrowNodeDelegator(): &FlowIDTableStaking.NodeDelegator {
-      if let nodeDelegator <- self.nodeDelegator <- nil {
-          let nodeDelegatorRef = &nodeDelegator as? &FlowIDTableStaking.NodeDelegator
-          self.nodeDelegator <-! nodeDelegator
-          return nodeDelegatorRef
+    access(self) fun borrowNodeDelegator(nodeID: String): &FlowIDTableStaking.NodeDelegator {
+      if let nodeDelegator <- self.nodeDelegators.remove(key: nodeID) {
+        let nodeDelegatorRef = &nodeDelegator as? &FlowIDTableStaking.NodeDelegator
+        let emptyNodeDelegator <- self.nodeDelegators.insert(key:nodeID, <- nodeDelegator)
+        destroy emptyNodeDelegator
+        return nodeDelegatorRef
       }
       panic("Unable to get Node delegator!")
     }
 
     access(self) fun incrementSequenceNumber(){
       self.seqNo = self.seqNo + UInt64(1)
+    }
+
+    access(account) fun registerNewDelegator(nodeID: String): &FlowIDTableStaking.NodeDelegator {
+      let newNodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+      let nodeDelegatorRef = &newNodeDelegator as? &FlowIDTableStaking.NodeDelegator
+      let oldNodeDelegator <- self.nodeDelegators.insert(key: nodeID, <- newNodeDelegator)
+      destroy oldNodeDelegator
+      return nodeDelegatorRef
     }
 
     access(self) fun isValidSignature(request: {ColdStakingStorage.ColdStakingStorageRequest}): Bool {
@@ -335,17 +321,17 @@ pub contract ColdStakingStorage {
       )
     }
 
-    init(address: Address, key: Key, contents: @FungibleToken.Vault, nodeDelegator: @FlowIDTableStaking.NodeDelegator?) {
+    init(address: Address, key: Key, contents: @FungibleToken.Vault, nodeDelegators: @{String: FlowIDTableStaking.NodeDelegator}) {
       self.key = key
       self.seqNo = UInt64(0)
       self.contents <- contents
       self.address = address
-      self.nodeDelegator <- nodeDelegator
+      self.nodeDelegators <- nodeDelegators
     }
 
     destroy() {
       destroy self.contents
-      destroy self.nodeDelegator
+      destroy self.nodeDelegators
     }
   }
 
@@ -353,9 +339,9 @@ pub contract ColdStakingStorage {
     address: Address,
     key: Key,
     contents: @FungibleToken.Vault,
-    nodeDelegator: @FlowIDTableStaking.NodeDelegator?,
+    nodeDelegators: @{String: FlowIDTableStaking.NodeDelegator}
   ): @Vault {
-    return <- create Vault(address: address, key: key, contents: <- contents, nodeDelegator: <- nodeDelegator)
+    return <- create Vault(address: address, key: key, contents: <- contents, nodeDelegators: <- nodeDelegators)
   }
 
   pub fun validateSignature(

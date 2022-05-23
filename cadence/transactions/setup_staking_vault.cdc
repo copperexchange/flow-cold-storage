@@ -29,12 +29,11 @@ transaction(publicKey: String) {
       hashAlgorithm: key.hashAlgorithm,
     )
 
-    let nilNodeDelegator: @FlowIDTableStaking.NodeDelegator? <- nil
     let coldVault <- ColdStakingStorage.createVault(
       address: account.address,
       key: accountKey,
       contents: <-flowVault,
-      nodeDelegator: <-nilNodeDelegator, // Do not register node delegator
+      nodeDelegators: <- {}
     )
 
     // save the new cold vault to storage

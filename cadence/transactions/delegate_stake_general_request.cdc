@@ -2,7 +2,7 @@ import Crypto
 
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
 
-transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, seqNo: UInt64, stakeOperation: UInt8, signatureA: String) {
+transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, seqNo: UInt64, nodeID: String, stakeOperation: UInt8, signatureA: String) {
 
   prepare(signer: AuthAccount) {
     let sender = getAccount(senderAddress)
@@ -21,6 +21,7 @@ transaction(senderAddress: Address, contractAddress: Address, amount: UFix64, se
       contractAddress: contractAddress,
       amount: amount,
       seqNo: seqNo,
+      nodeID: nodeID,
       stakeOperation: ColdStakingStorage.StakeOperation(rawValue: stakeOperation)!,
       sigSet: signatureSet,
     )

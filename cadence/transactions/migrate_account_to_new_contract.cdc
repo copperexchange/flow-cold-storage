@@ -5,7 +5,7 @@ import ColdStorage from "../contracts/ColdStorage.cdc"
 import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
 import FlowIDTableStaking from "../contracts/FlowIDTableStaking.cdc"
 
-transaction(senderAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String, nodeID: String) {
+transaction(senderAddress: Address, transferAmount: UFix64, stakeAmount: UFix64, seqNo: UInt64, nodeID: String, signatureA: String) {
   prepare(signer: AuthAccount) {
     let newAccount = AuthAccount(payer: signer)
     let oldAccount = getAccount(senderAddress)
@@ -23,18 +23,21 @@ transaction(senderAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: S
 
     let flowVault <- FlowToken.createEmptyVault()
     let coldStorageKey = oldAccountVaultRef.getKey()
-    let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
 
     let accountKey = ColdStakingStorage.Key(
       publicKey: key.publicKey.publicKey,
       signatureAlgorithm: key.publicKey.signatureAlgorithm,
       hashAlgorithm: key.hashAlgorithm,
     )
+
+    let newNodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+    let nodeDelegatorRef = &newNodeDelegator as? &FlowIDTableStaking.NodeDelegator
+
     let coldStakingVault <- ColdStakingStorage.createVault(
       address: newAccount.address,
       key: accountKey,
       contents: <-flowVault,
-      nodeDelegator: <-nodeDelegator,
+      nodeDelegators: <-{nodeID: <-newNodeDelegator}
     )
 
     let signatureSet = Crypto.KeyListSignature(
@@ -45,7 +48,7 @@ transaction(senderAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: S
     let request = ColdStorage.WithdrawRequest(
       senderAddress: oldAccount.address,
       recipientAddress: signer.address,
-      amount: amount,
+      amount: transferAmount,
       seqNo: seqNo,
       sigSet: signatureSet,
     )
@@ -56,8 +59,8 @@ transaction(senderAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: S
     let vaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
 			?? panic("Could not borrow reference to the signer's Vault!")
 
-    coldStakingVault.deposit(from: <-vaultRef.withdraw(amount: amount))
-
+    nodeDelegatorRef.delegateNewTokens(from: <-vaultRef.withdraw(amount: stakeAmount))
+    coldStakingVault.deposit(from: <-vaultRef.withdraw(amount: transferAmount-stakeAmount))
     destroy pendingWithdrawal
 
     newAccount.save(<-coldStakingVault, to: /storage/flowTokenColdStakingStorage)

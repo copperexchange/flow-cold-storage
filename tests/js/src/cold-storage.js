@@ -29,17 +29,3 @@ export const transferColdStorageTokens = async (sender, recipient, amount, seqNo
 	const signers = [accountA];
 	return sendTransaction({ name, args, signers });
 };
-
-export const getColdStorageBalance = async (account) => {
-	const name = "cold-storage/get_balance";
-	const args = [account];
-
-	return executeScript({ name, args });
-};
-
-export const getColdStorageSequence = async (account) => {
-	const name = "cold-storage/get_sequence";
-	const args = [account];
-
-	return executeScript({ name, args });
-};
