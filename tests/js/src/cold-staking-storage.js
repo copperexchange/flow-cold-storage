@@ -130,5 +130,5 @@ export const StakingOption = {
     delegateRewardedTokens: 2,
     requestUnstaking: 3,
     withdrawUnstakedTokens: 4,
-    withdrawRewardedTokens: 55,
+    withdrawRewardedTokens: 5,
 }

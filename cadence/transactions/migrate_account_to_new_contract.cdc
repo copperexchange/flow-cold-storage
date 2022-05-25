@@ -69,5 +69,4 @@ transaction(senderAddress: Address, transferAmount: UFix64, stakeAmount: UFix64,
     newAccount.unlink(/public/flowTokenReceiver)
     newAccount.link<&{FungibleToken.Receiver}>(/public/flowTokenReceiver,target: /storage/flowTokenColdStorage)
   }
-
 }

@@ -27,5 +27,11 @@ export const transferColdStorageTokens = async (sender, recipient, amount, seqNo
 	const args = [sender, recipient, amount, seqNo, signatureB];
 	const accountA = await getAccountA();
 	const signers = [accountA];
-	return sendTransaction({ name, args, signers });
+	const transactionResult = await sendTransaction({ name, args, signers });
+    if (transactionResult[1] == null) {
+        console.log("Transfer Tokens: ", JSON.stringify(transactionResult))
+    } else {
+        console.log("Error: ", transactionResult[1])
+    }
+    return transactionResult;
 };
