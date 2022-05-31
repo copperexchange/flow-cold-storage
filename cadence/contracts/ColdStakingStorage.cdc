@@ -5,6 +5,13 @@ import FlowToken from "./FlowToken"
 import FlowIDTableStaking from "./FlowIDTableStaking"
 
 pub contract ColdStakingStorage {
+  pub event ColdStakingDelegateNewTokens(nodeID: String, address: Address, amount: UFix64)
+  pub event ColdStakingDelegateUnstakedTokens(nodeID: String, address: Address, amount: UFix64)
+  pub event ColdStakingDelegateRewardedTokens(nodeID: String, address: Address, amount: UFix64)
+  pub event ColdStakingRequestUnstaking(nodeID: String, address: Address, amount: UFix64)
+  pub event ColdStakingWithdrawUnstakedTokens(nodeID: String, address: Address, amount: UFix64)
+  pub event ColdStakingWithdrawRewardedTokens(nodeID: String, address: Address, amount: UFix64)
+
   pub enum StakeOperation: UInt8 {
       pub case delegateNewTokens
       pub case delegateUnstakedTokens
@@ -163,6 +170,7 @@ pub contract ColdStakingStorage {
       var pendingVault <- FlowToken.createEmptyVault()
       self.pendingVault <-> pendingVault
 
+      emit ColdStakingDelegateNewTokens(nodeID: self.request.nodeID, address: self.request.senderAddress, amount: self.request.amount)
       self.nodeDelegatorRef.delegateNewTokens(from: <-pendingVault)
     }
 
@@ -272,14 +280,19 @@ pub contract ColdStakingStorage {
       self.incrementSequenceNumber()
       switch request.stakeOperation {
         case StakeOperation.delegateUnstakedTokens:
+          emit ColdStakingDelegateUnstakedTokens(nodeID: request.nodeID, address: self.address, amount: request.amount)
           nodeDelegatorRef.delegateUnstakedTokens(amount: request.amount)
         case StakeOperation.delegateRewardedTokens:
+          emit ColdStakingDelegateRewardedTokens(nodeID: request.nodeID, address: self.address, amount: request.amount)
           nodeDelegatorRef.delegateRewardedTokens(amount: request.amount)
         case StakeOperation.requestUnstaking:
+          emit ColdStakingRequestUnstaking(nodeID: request.nodeID, address: self.address, amount: request.amount)
           nodeDelegatorRef.requestUnstaking(amount: request.amount)
         case StakeOperation.withdrawUnstakedTokens:
+          emit ColdStakingWithdrawUnstakedTokens(nodeID: request.nodeID, address: self.address, amount: request.amount)
           self.deposit(from: <-nodeDelegatorRef.withdrawUnstakedTokens(amount: request.amount))
         case StakeOperation.withdrawRewardedTokens:
+          emit ColdStakingWithdrawRewardedTokens(nodeID: request.nodeID, address: self.address, amount: request.amount)
           self.deposit(from: <-nodeDelegatorRef.withdrawRewardedTokens(amount: request.amount))
         default:
           panic("Unknown Staking request")
