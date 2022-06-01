@@ -9,13 +9,14 @@ import {config} from "@onflow/config"
 import {
 	deployColdStorage,
 	setupColdStorageVault,
-	transferTokens,
-	getBalance, getSequence,
+	transferColdStorageTokens,
 } from "../src/cold-storage";
 
 import { signWithPrivateKey, sigAlgos, hashAlgos } from "../src/crypto"
 
 import { toUFix64, getAccountA, getAccountB } from "../src/common";
+import { deployColdStakingStorage, getBalance, getSequence } from "../src/cold-staking-storage";
+import { deployFlowStakingContracts } from "../src/flow-staking-contract";
 
 // We need to set timeout for a higher number, because some transactions might take up some time
 jest.setTimeout(10000);
@@ -42,7 +43,7 @@ function toBigEndianBytes(number, bits) {
 describe("ColdStorage", () => {
 	// Instantiate emulator and path to Cadence files
 	beforeEach(async () => {
-		const basePath = path.resolve(__dirname, "../../../");
+		const basePath = path.resolve(__dirname, "../../../cadence");
 		const port = 8083;
 		await init(basePath, port);
 		config().put("PRIVATE_KEY", "8e3983030d2af1fa01c078241ad7f699d492e0239247f38d5a96cb959e436531")
@@ -55,6 +56,8 @@ describe("ColdStorage", () => {
 	});
 
 	it("should be able to create an empty ColdStorage.Vault", async () => {
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
 		const contractName = await deployColdStorage();
 		console.log("deployed", contractName)
 
@@ -65,6 +68,8 @@ describe("ColdStorage", () => {
 	});
 
 	it("should be able to create a ColdStorage.Vault and fund with FLOW", async () => {
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
 		await deployColdStorage();
 
 		const accountA = await getAccountA();
@@ -83,6 +88,8 @@ describe("ColdStorage", () => {
 	});
 
 	it("should be able to transfer FLOW from a ColdStorage.Vault", async () => {
+        await deployFlowStakingContracts();
+        await deployColdStakingStorage();
 		await deployColdStorage();
 
 		const recipient = await getAccountA();
@@ -122,7 +129,7 @@ describe("ColdStorage", () => {
 
 		console.log('message, sign: ', message, signatureB)
 
-		const result = await transferTokens(
+		const result = await transferColdStorageTokens(
 			sender, recipient, amount, seqNo, signatureB
 		)
 		console.log('transferTokens', JSON.stringify(result))

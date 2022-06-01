@@ -1,17 +1,17 @@
 import Crypto
 
-import ColdStorage from "../contracts/ColdStorage.cdc"
+import ColdStakingStorage from "../contracts/ColdStakingStorage.cdc"
 
 transaction(senderAddress: Address, recipientAddress: Address, amount: UFix64, seqNo: UInt64, signatureA: String) {
 
-  let pendingWithdrawal: @ColdStorage.PendingWithdrawal
+  let pendingWithdrawal: @ColdStakingStorage.PendingWithdrawal
 
   prepare(signer: AuthAccount) {
     let sender = getAccount(senderAddress)
 
     let publicVault = sender
-      .getCapability(/public/flowTokenColdStorage)!
-      .borrow<&ColdStorage.Vault{ColdStorage.PublicVault}>()!
+      .getCapability(/public/flowTokenColdStakingStorage)!
+      .borrow<&ColdStakingStorage.Vault{ColdStakingStorage.PublicVault}>()!
 
     let signatureSet =
       Crypto.KeyListSignature(
@@ -19,7 +19,7 @@ transaction(senderAddress: Address, recipientAddress: Address, amount: UFix64, s
         signature: signatureA.decodeHex()
       )
 
-    let request = ColdStorage.WithdrawRequest(
+    let request = ColdStakingStorage.WithdrawRequest(
       senderAddress: senderAddress,
       recipientAddress: recipientAddress,
       amount: amount,
