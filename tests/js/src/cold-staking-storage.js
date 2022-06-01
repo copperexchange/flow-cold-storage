@@ -117,8 +117,16 @@ export const getSequence = async (account) => {
     return executeScript({ name, args });
 };
 
-export const getNodeDelegatorIds = async (account) => {
+export const getNodeDelegatorIds = async () => {
     const name = "get_node_delegator_ids";
+    const args = [];
+
+    return executeScript({ name, args });
+};
+
+
+export const getDelegatorInfo = async (account) => {
+    const name = "get_delegator_info";
     const args = [account];
 
     return executeScript({ name, args });

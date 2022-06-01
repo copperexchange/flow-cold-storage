@@ -229,11 +229,8 @@ pub contract FlowIDTableStaking {
 
         /// Withdraw tokens from the unstaked bucket
         pub fun withdrawUnstakedTokens(amount: UFix64): @FungibleToken.Vault {
-            let flowTokenMinter = FlowIDTableStaking.account.borrow<&FlowToken.Minter>(from: /storage/flowTokenMinter)
-                ?? panic("Could not borrow minter reference")
-
             emit DelegatorUnstakedTokensWithdrawn(nodeID: self.nodeID, delegatorID: self.id, amount: amount)
-            return <- flowTokenMinter.mintTokens(amount: amount)
+            return <- FlowToken.createEmptyVault()
         }
 
         /// Withdraw tokens from the rewarded bucket

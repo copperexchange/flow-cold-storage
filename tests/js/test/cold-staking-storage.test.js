@@ -16,7 +16,7 @@ import {
     delegateStakeNewTokens,
     StakingOption,
     delegateStakeGeneralRequest,
-    migrateAccountToNewContract, getNodeDelegatorIds,
+    migrateAccountToNewContract, getNodeDelegatorIds, getDelegatorInfo,
 } from "../src/cold-staking-storage";
 import {
     deployFlowStakingContracts, setupFlowStakingNode
@@ -76,6 +76,14 @@ describe("FlowIDTableStaking deployment", () => {
         expect(contractName).not.toBeNull();
         const result = await setupFlowStakingNode("1")
         expect(result[1]).toBeNull();   // Check there was no error
+    });
+
+    it("should be able to register a new node ", async () => {
+        const contractName = await deployFlowStakingContracts();
+        expect(contractName).not.toBeNull();
+        const result = await setupFlowStakingNode("1")
+        const nodeDelegatorIds = await getNodeDelegatorIds()
+        expect(nodeDelegatorIds).toEqual(["1"])
     });
 });
 
@@ -232,11 +240,11 @@ describe("ColdStakingStorage staking", () => {
         let amount = 5;
         const signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, nodeID, StakingOption.delegateNewTokens, sequence);
         const result = await delegateStakeNewTokens(address, contractAddress, amount, sequence, nodeID, signatureBStakeRequest)
-        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('FlowIDTableStaking.DelegatorTokensCommitted'))
-        const vaultNodeDelegatorIds = await getNodeDelegatorIds(address)
-        expect(vaultNodeDelegatorIds[0]).toStrictEqual(["1"])
-        expect(nodeIDRegistered).toBe(nodeID);
-        expect(delegatorIDRegistered).toBe(1);
+        const { data: { nodeID: nodeIDRegistered, address: senderAddress, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('ColdStakingStorage.ColdStakingDelegateNewTokens'))
+        const vaultNodeDelegatorInfo = await getDelegatorInfo(address)
+        expect(senderAddress).toEqual(address)
+        expect(vaultNodeDelegatorInfo[0][0]["nodeID"]).toEqual(nodeIDRegistered)
+        expect(vaultNodeDelegatorInfo[0][0]["id"]).toEqual(1)
         expect(parseInt(amountStakedRegistered)).toBe(amount);
         const [balanceB,] = await getBalance(address);
         expect(balanceB).toBe(toUFix64(5.0));
@@ -273,12 +281,9 @@ describe("ColdStakingStorage staking", () => {
         amount = 5;
         signatureBStakeRequest = createSignedMessageForStakeRequest(address, contractAddress, amount, nodeID, StakingOption.withdrawUnstakedTokens, sequence);
         const result = await delegateStakeGeneralRequest(address, contractAddress, amount, sequence, nodeID, StakingOption.withdrawUnstakedTokens, signatureBStakeRequest)
-        const { data: { nodeID: nodeIDRegistered, delegatorID: delegatorIDRegistered, amount: amountStakedRegistered } } = result[0].events.find((event) => event.type.includes('FlowIDTableStaking.DelegatorUnstakedTokensWithdrawn'))
+        const { data: { nodeID: nodeIDRegistered, address: senderAddress, amount: amountWithdrawnRegistered } } = result[0].events.find((event) => event.type.includes('ColdStakingStorage.ColdStakingWithdrawUnstakedTokens'))
         expect(nodeIDRegistered).toBe(nodeID);
-        expect(delegatorIDRegistered).toBe(1);
-        expect(parseInt(amountStakedRegistered)).toBe(amount);
-        const [balanceB,] = await getBalance(address);
-        expect(balanceB).toBe(toUFix64(10.0));
+        expect(parseInt(amountWithdrawnRegistered)).toBe(amount);
     });
 });
 
@@ -326,7 +331,7 @@ describe("ColdStakingStorage migration", () => {
     }
 
     it("should be able to migrate account to account with new contract", async () => {
-        await mintFlow(oldAccountAddress, "10.0");
+        await mintFlow(oldAccountAddress, "100.0");
         const [sequence,] = await getSequence(oldAccountAddress);
         const [startingBalAsString, ] = await getBalance(oldAccountAddress);
         const startingBalance = parseFloat(startingBalAsString);
@@ -338,6 +343,6 @@ describe("ColdStakingStorage migration", () => {
         const [oldAccountCurrentBalance,] = await getBalance(oldAccountAddress);
         expect(oldAccountCurrentBalance).toBe(toUFix64(0.0));
         const [createdAddressCurrentBalance,] = await getBalance(createdAddress);
-        expect(createdAddressCurrentBalance).toBe(toUFix64(9.0));
+        expect(createdAddressCurrentBalance).toBe(toUFix64(99.0));
     });
 });

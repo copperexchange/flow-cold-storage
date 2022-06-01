@@ -18,7 +18,7 @@ export const deployFlowStakingContracts = async () => {
 };
 
 export const setupFlowStakingNode = async (nodeId) => {
-    const name = "setup_testing_node";
+    const name = "testing/setup_testing_node";
     const args = [nodeId];
     const nodeAccount = await getAccountNode();
     const signers = [nodeAccount];
